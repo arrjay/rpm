@@ -8,7 +8,7 @@
 %define docver %(echo %{basever}|sed -e "s/\\./_/g")
 
 Summary: Library that implements an embeddable SQL database engine
-Name: sqlite
+Name: sqlite-unlock_notify
 Version: %{basever}
 Release: 1%{?dist}
 License: Public Domain
@@ -87,14 +87,16 @@ This package contains the tcl modules for %{name}.
 %endif
 
 %prep
-%setup -q -a1
+%setup -q -a1 -n sqlite-%{basever}
 %patch1 -p1 -b .libdl
 %patch2 -p1 -b .lemon-sprintf
 
 %build
 autoconf
-export CFLAGS="$RPM_OPT_FLAGS -DSQLITE_ENABLE_COLUMN_METADATA=1 -DSQLITE_DISABLE_DIRSYNC=1 -DSQLITE_ENABLE_FTS3=3 -DSQLITE_ENABLE_RTREE=1 -Wall -fno-strict-aliasing"
+export CFLAGS="$RPM_OPT_FLAGS -DSQLITE_ENABLE_COLUMN_METADATA=1 -DSQLITE_DISABLE_DIRSYNC=1 -DSQLITE_ENABLE_FTS3=3 -DSQLITE_ENABLE_RTREE=1 -DSQLITE_ENABLE_UNLOCK_NOTIFY=1 -Wall -fno-strict-aliasing"
 %configure %{!?with_tcl:--disable-tcl} \
+           --libdir=%{_libdir}/sqlite3-unlock_notify/ \
+           --includedir=%{_includedir}/sqlite3-unlock_notify/ \
            --enable-threadsafe \
            --enable-threads-override-locks \
            --enable-load-extension \
@@ -111,9 +113,9 @@ rm -rf $RPM_BUILD_ROOT
 
 make DESTDIR=${RPM_BUILD_ROOT} install
 
-install -D -m0644 sqlite3.1 $RPM_BUILD_ROOT/%{_mandir}/man1/sqlite3.1
 install -D -m0755 lemon $RPM_BUILD_ROOT/%{_bindir}/lemon
 install -D -m0644 tool/lempar.c $RPM_BUILD_ROOT/%{_datadir}/lemon/lempar.c
+mv $RPM_BUILD_ROOT/%{_bindir}/sqlite3 $RPM_BUILD_ROOT/%{_bindir}/sqlite3-unlock_notify
 
 %if %{with tcl}
 # fix up permissions to enable dep extraction
@@ -121,7 +123,7 @@ chmod 0755 ${RPM_BUILD_ROOT}/%{tcl_sitearch}/sqlite3/*.so
 %endif
 
 %if ! %{with static}
-rm -f $RPM_BUILD_ROOT/%{_libdir}/*.{la,a}
+rm -f $RPM_BUILD_ROOT/%{_libdir}/sqlite3-unlock_notify/*.{la,a}
 %endif
 
 %if %{with check}
@@ -142,23 +144,22 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-, root, root)
 %doc README
-%{_bindir}/sqlite3
-%{_libdir}/*.so.*
-%{_mandir}/man?/*
+%{_bindir}/sqlite3-unlock_notify
+%{_libdir}/sqlite3-unlock_notify/*.so.*
 
 %files devel
 %defattr(-, root, root)
-%{_includedir}/*.h
-%{_libdir}/*.so
-%{_libdir}/pkgconfig/*.pc
+%{_includedir}/sqlite3-unlock_notify/*.h
+%{_libdir}/sqlite3-unlock_notify/*.so
+%{_libdir}/sqlite3-unlock_notify/pkgconfig/*.pc
 %if %{with static}
-%{_libdir}/*.a
-%exclude %{_libdir}/*.la
+%{_libdir}/sqlite3-unlock_notify/*.a
+%exclude %{_libdir}/sqlite3-unlock_notify/*.la
 %endif
 
 %files doc
 %defattr(-, root, root)
-%doc %{name}-%{docver}-docs/*
+%doc sqlite-%{docver}-docs/*
 
 %files -n lemon
 %defattr(-, root, root)
