@@ -1,6 +1,6 @@
 Name:           arrjay-release
 Version:        6
-Release:        3
+Release:        4
 Summary:        Arrjay.net Packages for Enterprise Linux repository configuration
 
 Group:          System Environment/Base
@@ -53,6 +53,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Fri Aug 15 2015 <rj@arrjay.net> - 6-4
+- fix repo tag
+
 * Fri Aug 15 2015 <rj@arrjay.net> - 6-3
 - drop EPEL requirement as the repo doesn't consistently need it...
 - add repo file

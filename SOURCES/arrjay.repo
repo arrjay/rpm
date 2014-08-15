@@ -1,4 +1,4 @@
-[epel]
+[arrjay]
 name=Arrjay.net Packages for Enterprise Linux $releasever - $basearch
 baseurl=http://arrjay.github.io/rpm/el$releasever/$basearch
 enabled=1
