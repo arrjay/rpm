@@ -1,0 +1,6 @@
+[epel]
+name=Arrjay.net Packages for Enterprise Linux $releasever - $basearch
+baseurl=http://arrjay.github.io/rpm/el$releasever/$basearch
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-arrjay.net
