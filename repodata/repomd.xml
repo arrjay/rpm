@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<repomd xmlns="http://linux.duke.edu/metadata/repo" xmlns:rpm="http://linux.duke.edu/metadata/rpm">
+ <revision>1408068197</revision>
+<data type="filelists">
+  <checksum type="sha256">cad1855654f3d1d4effa029a165dfaea0f706ff68844bba23c255f56c3d6e835</checksum>
+  <open-checksum type="sha256">14a88dbe2709916e7f7fb1fd167e6d6da950c881607792805a04b4064a5086b5</open-checksum>
+  <location xml:base="https://github.com/arrjay/rpm/releases/download" href="repodata/cad1855654f3d1d4effa029a165dfaea0f706ff68844bba23c255f56c3d6e835-filelists.xml.gz"/>
+  <timestamp>1408068197</timestamp>
+  <size>279</size>
+  <open-size>355</open-size>
+</data>
+<data type="primary">
+  <checksum type="sha256">cf11ac431a37a9774aeb0de8a33146f682ebab12467d9099155f3320aec5a64a</checksum>
+  <open-checksum type="sha256">a31bcddd93e8d05ba352fb9e8d77d4215b611e7e748f121d6a839b9716d47d6c</open-checksum>
+  <location xml:base="https://github.com/arrjay/rpm/releases/download" href="repodata/cf11ac431a37a9774aeb0de8a33146f682ebab12467d9099155f3320aec5a64a-primary.xml.gz"/>
+  <timestamp>1408068197</timestamp>
+  <size>733</size>
+  <open-size>1450</open-size>
+</data>
+<data type="primary_db">
+  <checksum type="sha256">b738a6680da7d620404e915fb3613c921df26a40dc972952f7801cc1eef980c1</checksum>
+  <open-checksum type="sha256">a200c43cfdb7ae42c57abc7d7dd7bace3af8c6a89688a6ab5e5d8c6fc670a4b7</open-checksum>
+  <location xml:base="https://github.com/arrjay/rpm/releases/download" href="repodata/b738a6680da7d620404e915fb3613c921df26a40dc972952f7801cc1eef980c1-primary.sqlite.bz2"/>
+  <timestamp>1408068197.42</timestamp>
+  <database_version>10</database_version>
+  <size>1875</size>
+  <open-size>20480</open-size>
+</data>
+<data type="other_db">
+  <checksum type="sha256">329a23c283848c1f4dececb372de46a2c45bfd874f8fb72726adebba0ade0fce</checksum>
+  <open-checksum type="sha256">7081c6402f217b3a1cc7c4cd65889d0c109cda17cf545b558fc585b1900b7317</open-checksum>
+  <location xml:base="https://github.com/arrjay/rpm/releases/download" href="repodata/329a23c283848c1f4dececb372de46a2c45bfd874f8fb72726adebba0ade0fce-other.sqlite.bz2"/>
+  <timestamp>1408068197.39</timestamp>
+  <database_version>10</database_version>
+  <size>750</size>
+  <open-size>6144</open-size>
+</data>
+<data type="other">
+  <checksum type="sha256">fc6f82db64bc48e0ccdb759771d3fb04ec5ff3206e61a03c20bb78cb48043556</checksum>
+  <open-checksum type="sha256">1a674b3a92887a3eebd59b1c74d279d88095a5de46698d2a59af5393bc5f8c5a</open-checksum>
+  <location xml:base="https://github.com/arrjay/rpm/releases/download" href="repodata/fc6f82db64bc48e0ccdb759771d3fb04ec5ff3206e61a03c20bb78cb48043556-other.xml.gz"/>
+  <timestamp>1408068197</timestamp>
+  <size>333</size>
+  <open-size>500</open-size>
+</data>
+<data type="filelists_db">
+  <checksum type="sha256">05d811fd96f0de56ccd2fa4638297750c989d760c8ab5daddbf35eefd957d09a</checksum>
+  <open-checksum type="sha256">46340228be0de2cb5ccb84d3059a81b76c20ff390bb18195b0f36f45f91ba39b</open-checksum>
+  <location xml:base="https://github.com/arrjay/rpm/releases/download" href="repodata/05d811fd96f0de56ccd2fa4638297750c989d760c8ab5daddbf35eefd957d09a-filelists.sqlite.bz2"/>
+  <timestamp>1408068197.4</timestamp>
+  <database_version>10</database_version>
+  <size>736</size>
+  <open-size>7168</open-size>
+</data>
+</repomd>
