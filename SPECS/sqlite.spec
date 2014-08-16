@@ -1,5 +1,12 @@
+# stab auto-provides with a spork
+%define __find_provides %{nil}
+%define _use_internal_dependency_generator 0
+
+# provide knob to selectively build (typically) unneeded subpackages
+%define allpkgs 0
+
 # bcond default logic is nicely backwards...
-%bcond_without tcl
+%bcond_with tcl
 %bcond_with static
 %bcond_without check
 
@@ -10,7 +17,7 @@
 Summary: Library that implements an embeddable SQL database engine
 Name: sqlite-unlock_notify
 Version: %{basever}
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: Public Domain
 Group: Applications/Databases
 URL: http://www.sqlite.org/
@@ -51,6 +58,7 @@ This package contains the header files and development documentation
 for %{name}. If you like to develop programs using %{name}, you will need 
 to install %{name}-devel.
 
+%if %{allpkgs}
 %package doc
 Summary: Documentation for sqlite
 Group: Documentation
@@ -85,6 +93,7 @@ Requires: tcl(abi) = %{tcl_version}
 %description tcl
 This package contains the tcl modules for %{name}.
 %endif
+%endif
 
 %prep
 %setup -q -a1 -n sqlite-%{basever}
@@ -113,8 +122,10 @@ rm -rf $RPM_BUILD_ROOT
 
 make DESTDIR=${RPM_BUILD_ROOT} install
 
+%if %{allpkgs}
 install -D -m0755 lemon $RPM_BUILD_ROOT/%{_bindir}/lemon
 install -D -m0644 tool/lempar.c $RPM_BUILD_ROOT/%{_datadir}/lemon/lempar.c
+%endif
 mv $RPM_BUILD_ROOT/%{_bindir}/sqlite3 $RPM_BUILD_ROOT/%{_bindir}/sqlite3-unlock_notify
 
 %if %{with tcl}
@@ -157,6 +168,7 @@ rm -rf $RPM_BUILD_ROOT
 %exclude %{_libdir}/sqlite3-unlock_notify/*.la
 %endif
 
+%if %{allpkgs}
 %files doc
 %defattr(-, root, root)
 %doc sqlite-%{docver}-docs/*
@@ -171,8 +183,12 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-, root, root)
 %{tcl_sitearch}/sqlite3
 %endif
+%endif
 
 %changelog
+* Fri Aug 12 2014 RJ Bergeron <rpm@arrjay.net> - 3.6.20-2
+- build with unlock_notify support
+
 * Tue Nov 17 2009 Panu Matilainen <pmatilai@redhat.com> - 3.6.20-1
 - update to 3.6.20 (http://www.sqlite.org/releaselog/3_6_20.html)
 
