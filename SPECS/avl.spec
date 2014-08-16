@@ -1,8 +1,6 @@
-# Name of the project is avl, despite Debian using libavl, because they cannot
-# do otherwise.
-Name:           avl
+Name:           libavl
 Version:        0.3.5
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        AVL tree manipulation library
 
 Group:          System Environment/Libraries
@@ -30,7 +28,7 @@ The %{name}-devel package contains libraries and header files for
 developing applications that use %{name}.
 
 %prep
-%setup -q
+%setup -q -n avl-%{version}
 %patch0 -p1 -b .build
 
 %build
@@ -65,5 +63,8 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Fri Aug 15 2014 RJ Bergeron <rpm@arrjay.net> - 0.3.5-2
+- resurrected from the dead, and renamed to libavl, as upstream now has some other avl package.
+
 * Mon Dec 06 2010 Matěj Cepl <mcepl@redhat.com> - 0.3.5-1
 - Experimental build for review.
