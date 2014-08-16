@@ -5,7 +5,7 @@
 Name:		forked-daapd
 Version:	21.0
 Release:	3%{?dist}
-Summary:	A DAAP protocol media server (iTunes, Rhythmbox, Soundbridge)
+Summary:	media server with support for RSP, DAAP, DACP and AirTunes
 
 Group:		Applications/Multimedia
 License:	GPLv2
@@ -33,8 +33,9 @@ Requires(pre):	shadow-utils
 %define __find_requires %{SOURCE99}
 
 %description
-This is a 'fork' of the original mt-daapd DAAP server, providing a few
-improvements and support for things like multiple library volumes.
+forked-daapd is an iTunes-compatible media server for sharing your music
+library over the local network with RSP clients like the SoundBridge from Roku
+and DAAP clients like iTunes. It can also stream music to AirTunes devices.
 
 %prep
 %setup -q
