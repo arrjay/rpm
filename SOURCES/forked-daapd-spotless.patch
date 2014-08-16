@@ -1,0 +1,18 @@
+diff -uNr forked-daapd-21.0/forked-daapd.conf forked-daapd-21.0.rpm/forked-daapd.conf
+--- forked-daapd-21.0/forked-daapd.conf	2014-06-14 17:22:07.000000000 -0400
++++ forked-daapd-21.0.rpm/forked-daapd.conf	2014-08-16 15:53:12.155689037 -0400
+@@ -113,14 +113,3 @@
+ 	# AirPlay password
+ #	password = "s1kr3t"
+ #}
+-
+-# Spotify settings (only have effect if Spotify enabled - see README/INSTALL)
+-spotify {
+-	# Directory where user settings should be stored (credentials)
+-#	settings_dir = "/var/cache/forked-daapd/libspotify"
+-	# Cache directory
+-#	cache_dir = "/tmp"
+-	# Set preferred bitrate for music streaming
+-	# 0: No preference (default), 1: 96kbps, 2: 160kbps, 3: 320kbps
+-#	bitrate = 0
+-}
