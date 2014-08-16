@@ -82,6 +82,7 @@ reentrant and thread-safe. Furthermore, Lemon implements features
 that can be used to eliminate resource leaks, making is suitable for
 use in long-running programs such as graphical user interfaces or
 embedded controllers.
+%endif
 
 %if %{with tcl}
 %package tcl
@@ -92,7 +93,6 @@ Requires: tcl(abi) = %{tcl_version}
 
 %description tcl
 This package contains the tcl modules for %{name}.
-%endif
 %endif
 
 %prep
@@ -177,12 +177,12 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-, root, root)
 %{_bindir}/lemon
 %{_datadir}/lemon
+%endif
 
 %if %{with tcl}
 %files tcl
 %defattr(-, root, root)
 %{tcl_sitearch}/sqlite3
-%endif
 %endif
 
 %changelog
