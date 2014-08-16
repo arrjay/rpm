@@ -1,0 +1,16 @@
+diff -uNr forked-daapd-21.0/forked-daapd.conf forked-daapd-21.0.rpm/forked-daapd.conf
+--- forked-daapd-21.0/forked-daapd.conf	2014-08-16 15:57:45.432689257 -0400
++++ forked-daapd-21.0.rpm/forked-daapd.conf	2014-08-16 15:58:37.385689709 -0400
+@@ -1,10 +1,10 @@
+ 
+ general {
+ 	# Username
+-	uid = "daapd"
++	uid = "forked-daapd"
+ 	logfile = "/var/log/forked-daapd.log"
+ 	# Database location
+-#	db_path = "/var/cache/forked-daapd/songs3.db"
++	db_path = "/var/cache/forked-daapd/songs3.db"
+ 	# Available levels: fatal, log, warning, info, debug, spam
+ 	loglevel = log
+ 	# Admin password for the non-existent web interface

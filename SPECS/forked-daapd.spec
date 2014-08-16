@@ -13,7 +13,8 @@ URL:		https://github.com/ejurgensen/forked-daapd
 # er, you need to use the real release source, since that includes the antlr3 pregen files and configure scripts.
 Source0:	https://github.com/arrjay/forked-daapd/releases/download/21.0/forked-daapd-21.0.tgz
 Source99:	forked-daapd-filter-requires.sh
-Patch0:		forked-daapd-spotless.patch
+Patch0:		forked-daapd-packaging.patch
+Patch1:		forked-daapd-spotless.patch
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 BuildRequires:	sqlite-unlock_notify-devel antlr3-C-devel gperf
@@ -41,6 +42,7 @@ and DAAP clients like iTunes. It can also stream music to AirTunes devices.
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p1
 
 %build
 export PKG_CONFIG_PATH=%{_libdir}/sqlite3-unlock_notify/pkgconfig
