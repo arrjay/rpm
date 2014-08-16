@@ -2,9 +2,10 @@
 #
 # forked-daapd		forked-daapd media server
 #
-# chkconfig: 345 80 30
+# chkconfig: 345 98 15
 # description: forked-daapd is a media server for RSP, DAAP, DACP and AirTunes
 # processname: forked-daapd
+# pidfile : /var/run/forked-daapd
 # config: /etc/forked-daapd.conf
 
 ### BEGIN INIT INFO
@@ -21,3 +22,52 @@
 #			clients like the SoundBridge from Roku and DAAP clients like
 #			iTunes. It can also stream music to AirTunes devices.
 ### END INIT INFO
+
+# source function library
+. /etc/init.d/functions
+[ -e /etc/forked-daapd.conf ]
+
+forkdaapd=/usr/sbin/forked-daapd
+pidfile=/var/run/forked-daapd.pid
+lockfile=/var/lock/subsys/forked-daapd
+RETVAL=0
+
+start() {
+	echo -n $"Starting DAAP server: "
+	$forkdaapd
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && touch ${lockfile}
+}
+
+stop() {
+	echo -n $"Shutting down DAAP server: "
+	killproc -p ${pidfile} $forkdaapd
+	RETVAL=$?
+
+	echo
+	[ $RETVAL -eq 0 ] && rm -f ${lockfile} ${pidfile}
+}
+
+case "$1" in
+  start)
+	start
+	;;
+ stop)
+	stop
+	;;
+  restart|reload)
+	stop
+	start
+	RETVAL=$?
+	;;
+  status)
+	status mt-daapd
+	RETVAL=$?
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|restart|status}"
+	exit 1
+esac
+
+exit $RETVAL

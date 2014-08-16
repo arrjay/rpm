@@ -4,7 +4,7 @@
 
 Name:		forked-daapd
 Version:	21.0
-Release:	3%{?dist}
+Release:	4%{?dist}
 Summary:	media server with support for RSP, DAAP, DACP and AirTunes
 
 Group:		Applications/Multimedia
@@ -12,6 +12,7 @@ License:	GPLv2
 URL:		https://github.com/ejurgensen/forked-daapd
 # er, you need to use the real release source, since that includes the antlr3 pregen files and configure scripts.
 Source0:	https://github.com/arrjay/forked-daapd/releases/download/21.0/forked-daapd-21.0.tgz
+Source1:	forked-daapd.init
 Source99:	forked-daapd-filter-requires.sh
 Patch0:		forked-daapd-packaging.patch
 Patch1:		forked-daapd-spotless.patch
@@ -54,6 +55,8 @@ make %{?_smp_mflags}
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
 mkdir -p %{buildroot}/%{homedir}
+mkdir -p %{buildroot}/%{_initddir}
+install -m 755 %{S:1} %{buildroot}/%{_initddir}/forked-daapd
 
 %pre
 getent group %{username} > /dev/null || groupadd -r %{username}
@@ -62,12 +65,22 @@ getent passwd %{username} > /dev/null || \
     -c '%{gecos}' %{username}
 exit 0
 
+%preun
+if [ $1 = 0 ]; then
+	/sbin/service forked-daapd stop > /dev/null 2>&1
+	/sbin/chkconfig --del forked-daapd
+fi
+
+%post
+/sbin/chkconfig --add forked-daapd
+
 %clean
 rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root,-)
 %config(noreplace) /etc/forked-daapd.conf
+%{_initddir}/forked-daapd
 %{_libdir}/forked-daapd/forked-daapd-sqlext.la
 %{_libdir}/forked-daapd/forked-daapd-sqlext.so
 %{_sbindir}/forked-daapd
@@ -75,6 +88,9 @@ rm -rf %{buildroot}
 %attr(0700,forked-daapd,forked-daapd) %{homedir}
 
 %changelog
+* Sat Aug 16 2014 <rj@arrjay.net> - 21.0-4
+- having an init script would be nice.
+
 * Sat Aug 16 2014 <rj@arrjay.net> - 21.0-3
 - create a user to run under (forked-daapd) and db cache dir
 
