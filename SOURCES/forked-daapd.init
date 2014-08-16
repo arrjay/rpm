@@ -1,12 +1,23 @@
+#!/bin/bash
+#
+# forked-daapd		forked-daapd media server
+#
+# chkconfig: 345 80 30
+# description: forked-daapd is a media server for RSP, DAAP, DACP and AirTunes
+# processname: forked-daapd
+# config: /etc/forked-daapd.conf
+
 ### BEGIN INIT INFO
-# Provides: forked-daapd
-# Required-Start: $local_fs $remote_fs $network $time avahi
-# Required-Stop: $local_fs $remote_fs $network $time
-# Default-Start: 2 3 4 5
-# Default-Stop: 0 1 6
-# Short-Description: media server with support for RSP, DAAP, DACP and AirTunes
-# Description:	forked-daapd is an iTunes-compatible media server for
-#	sharing your music library over the local network with RSP
-#	clients like the SoundBridge from Roku and DAAP clients like
-#	iTunes. It can also stream music to AirTunes devices.
+# Provides:		forked-daapd
+# Required-Start:	$local_fs $remote_fs $network $time
+# Required-Stop:	$local_fs $remote_fs $network $time
+# Should-Start:		avahi
+# Should-Stop:		avahi
+# Default-Start:	3 4 5
+# Default-Stop:		0 1 2 6
+# Short-Description:	media server with support for RSP, DAAP, DACP and AirTunes
+# Description:		forked-daapd is an iTunes-compatible media server for
+#			sharing your music library over the local network with RSP
+#			clients like the SoundBridge from Roku and DAAP clients like
+#			iTunes. It can also stream music to AirTunes devices.
 ### END INIT INFO
