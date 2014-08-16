@@ -1,6 +1,6 @@
 Name:		forked-daapd
 Version:	21.0
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	A DAAP protocol media server (iTunes, Rhythmbox, Soundbridge)
 
 Group:		Applications/Multimedia
@@ -33,7 +33,7 @@ improvements and support for things like multiple library volumes.
 
 %build
 export PKG_CONFIG_PATH=/usr/lib64/sqlite3-unlock_notify/pkgconfig
-export CFLAGS=-I/usr/include/sqlite3-unlock_notify
+export CFLAGS="-I/usr/include/sqlite3-unlock_notify -Wl,-R/usr/lib64/sqlite3-unlock_notify/"
 %configure
 make %{?_smp_mflags}
 
@@ -53,5 +53,8 @@ rm -rf %{buildroot}
 %{_mandir}/man8/forked-daapd.8.gz
 
 %changelog
-* Sat Aug 16 2015 <rj@arrjay.net> - 21.0-1
+* Sat Aug 16 2014 <rj@arrjay.net> - 21.0-2
+- set library search path in build stage so we pick the 'right' sqlite
+
+* Sat Aug 16 2014 <rj@arrjay.net> - 21.0-1
 - initial packaging
