@@ -1,6 +1,6 @@
 Name:           arrjay-release
 Version:        6
-Release:        4
+Release:        5
 Summary:        Arrjay.net Packages for Enterprise Linux repository configuration
 
 Group:          System Environment/Base
@@ -53,6 +53,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Fri Aug 15 2015 <rj@arrjay.net> - 6-4
+- update repodata to provide sources, debuginfo
+
 * Fri Aug 15 2015 <rj@arrjay.net> - 6-4
 - fix repo tag
 
