@@ -1,0 +1,45 @@
+diff -uNr mt-daapd-svn-1696/contrib/init.d/mt-daapd-fedora.templ mt-daapd-svn-1696.rpm/contrib/init.d/mt-daapd-fedora.templ
+--- mt-daapd-svn-1696/contrib/init.d/mt-daapd-fedora.templ	2007-08-10 00:07:26.000000000 -0400
++++ mt-daapd-svn-1696.rpm/contrib/init.d/mt-daapd-fedora.templ	2014-08-17 12:32:16.515602974 -0400
+@@ -1,6 +1,6 @@
+ #!/bin/sh
+ #
+-# chkconfig: 2345 85 15
++# chkconfig: - 98 15
+ # description: mt-daapd is a multi-threaded DAAP server for iTunes
+ # processname: mt-daapd
+ # pidfile: /var/run/mt-daapd
+@@ -10,25 +10,27 @@
+ . /etc/init.d/functions
+ [ -e @prefix@/etc/daapd.conf ]
+ 
++mtdaapd=@prefix@/sbin/mt-daapd
++pidfile=/var/run/mt-daapd.pid
++lockfile=/var/lock/subsys/mt-daapd
++
+ RETVAL=0
+ 
+ start() {
+ 	echo -n $"Starting DAAP server: "
+-	daemon @prefix@/sbin/mt-daapd 
++	daemon --pidfile=${pidfile} $mt-daapd 
+ 	RETVAL=$?
+ 	echo
+-	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/mt-daapd
++	[ $RETVAL -eq 0 ] && touch ${lockfile}
+ }
+ 
+ stop() {
+ 	echo -n $"Shutting down DAAP server: "
+-	# This is broken.
+-	killall -INT mt-daapd
+-#	killproc mt-daapd
++	killproc -p ${pidfile} $mtdaapd
+ 	RETVAL=$?
+ 
+ 	echo
+-	[ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/mt-daapd
++	[ $RETVAL -eq 0 ] && rm -f ${lockfile} ${pidfile}
+ }
+ 
+ case "$1" in

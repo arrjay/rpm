@@ -13,8 +13,8 @@ License: GPLv2+
 Group: Applications/Multimedia
 Source0: http://distcache.FreeBSD.org/ports-distfiles/%{name}-svn-%{basever}.tar.gz
 Source1: %{name}.service
-Patch0: mt-daapd-0.2.4.2-defaults.patch
-Patch1: mt-daapd-0.2.4.2-fedora.patch
+Patch0: mt-daapd-svn-defaults.patch
+Patch1: mt-daapd-svn-fedora.patch
 Url: http://www.fireflymediaserver.org/
 BuildRequires: gdbm-devel, avahi-devel, zlib-devel
 BuildRequires: flac-devel, libogg-devel, libvorbis-devel
@@ -29,8 +29,8 @@ devices.
 
 %prep
 %setup -q -n %{name}-svn-%{basever}
-#%patch0 -p1 -b .defaults
-#%patch1 -p1 -b .fedora
+%patch0 -p1 -b .defaults
+%patch1 -p1 -b .fedora
 
 %build
 %configure --enable-avahi --enable-oggvorbis --enable-sqlite3 --enable-flac
@@ -73,6 +73,9 @@ fi
 %doc AUTHORS COPYING CREDITS NEWS README TODO
 
 %changelog
+* Sun Aug 17 2014 RJ Bergeron <rpm@arrjay.net> - 2:r1696-1
+- switch to last workable svn release (what freebsd uses)
+
 * Sun Aug 17 2014 RJ Bergeron <rpm@arrjay.net> - 1:0.2.4.2-15
 - Rebuild for EL6, drop systemd and fedora user management
 
