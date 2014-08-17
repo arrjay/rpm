@@ -1,7 +1,3 @@
-# $Id: perl-MP3-Tag.spec 6816 2009-05-28 06:33:31Z cmr $
-# Authority: dag
-# Upstream: Ilya Zakharevich <cpan$ilyaz,org>
-
 %define perl_vendorlib %(eval "`%{__perl} -V:installvendorlib`"; echo $installvendorlib)
 %define perl_vendorarch %(eval "`%{__perl} -V:installvendorarch`"; echo $installvendorarch)
 
@@ -9,20 +5,17 @@
 
 Summary: Module for reading tags of MP3 audio files
 Name: perl-MP3-Tag
-Version: 1.11
-Release: 2.rf
+Version: 1.13
+Release: 1
 License: Artistic/GPL
 Group: Applications/CPAN
 URL: http://search.cpan.org/dist/MP3-Tag/
-
-Packager: Dag Wieers <dag@wieers.com>
-Vendor: Dag Apt Repository, http://dag.wieers.com/apt/
 
 Source: http://www.cpan.org/modules/by-module/MP3/MP3-Tag-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
 BuildArch: noarch
-BuildRequires: perl
+BuildRequires: perl perl-ExtUtils-MakeMaker
 
 Provides: perl(Normalize::Text::Normalize_Fields)
 
@@ -75,6 +68,9 @@ find examples/ -type f -exec %{__chmod} a-x {} \;
 %{perl_vendorlib}/MP3/Tag.pm
 
 %changelog
+* Sat Aug 16 2014 RJ Bergeron <rpm@arrjay.net> - 1.13-1
+- Update to version 1.13.
+
 * Sun Jul 19 2009 Dag Wieers <dag@wieers.com> - 1.11-2 - 6816+/cmr
 - Remove examples/mod to not pull incorrect requires.
 
