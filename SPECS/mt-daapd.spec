@@ -8,13 +8,14 @@ Summary: An iTunes-compatible media server
 Name: mt-daapd
 Epoch: 2
 Version: r%{basever}
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: Applications/Multimedia
 Source0: http://distcache.FreeBSD.org/ports-distfiles/%{name}-svn-%{basever}.tar.gz
 Source1: %{name}.service
 Patch0: mt-daapd-svn-defaults.patch
 Patch1: mt-daapd-svn-fedora.patch
+Patch2: patch-plugins_out-daap.c
 Url: http://www.fireflymediaserver.org/
 BuildRequires: gdbm-devel, avahi-devel, zlib-devel
 BuildRequires: flac-devel, libogg-devel, libvorbis-devel
@@ -31,6 +32,7 @@ devices.
 %setup -q -n %{name}-svn-%{basever}
 %patch0 -p1 -b .defaults
 %patch1 -p1 -b .fedora
+%patch2 -p0 -b .itunes10
 
 %build
 %configure --enable-avahi --enable-oggvorbis --enable-sqlite3 --enable-flac
@@ -73,6 +75,9 @@ fi
 %doc AUTHORS COPYING CREDITS NEWS README TODO
 
 %changelog
+* Sun Aug 17 2014 RJ Bergeron <rpm@arrjay.net> - 2:r1696-2
+- patch for iTunes 10 compatibility.
+
 * Sun Aug 17 2014 RJ Bergeron <rpm@arrjay.net> - 2:r1696-1
 - switch to last workable svn release (what freebsd uses)
 
