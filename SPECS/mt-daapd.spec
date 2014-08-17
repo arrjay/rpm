@@ -1,8 +1,3 @@
-%bcond_without fedora
-
-%{?FE_USERADD_REQ}
-
-%global uid 72
 %global username mt-daapd
 %global homedir %_var/lib/%username
 %global gecos mt-daapd
@@ -19,19 +14,10 @@ Source1: %{name}.service
 Patch0: mt-daapd-0.2.4.2-defaults.patch
 Patch1: mt-daapd-0.2.4.2-fedora.patch
 Url: http://www.fireflymediaserver.org/
-BuildRequires: fedora-usermgmt-devel
 BuildRequires: gdbm-devel, avahi-devel, zlib-devel
 BuildRequires: flac-devel, libogg-devel, libvorbis-devel
 BuildRequires: libid3tag-devel, sqlite-devel
-BuildRequires: systemd-units
-Requires(pre):   /usr/sbin/useradd
-Requires(post): systemd-sysv
-Requires(post): systemd-units
-Requires(preun): systemd-units
-Requires(postun): systemd-units
-
-Provides: group(%username) = %uid
-Provides: user(%username) = %uid
+Requires(pre): shadow-utils
 
 %description
 The purpose of this project is built the best server software to serve
@@ -50,53 +36,34 @@ make %{?_smp_mflags}
 
 %install
 make DESTDIR=%{buildroot} install
-mkdir -p %{buildroot}%{_unitdir}
 mkdir -p %{buildroot}%{_localstatedir}/cache/mt-daapd
-install %{SOURCE1} %{buildroot}%{_unitdir}/
 mkdir -p %{buildroot}%{_sysconfdir}
+mkdir -p %{buildroot}%{_initddir}
 install -m 0640 contrib/mt-daapd.conf %{buildroot}%{_sysconfdir}/
+install -m 0755 contrib/mt-daapd %{buildroot}%{_initddir}/
 
 %pre
-%__fe_groupadd %uid -r %username &>/dev/null || :
-%__fe_useradd  %uid -r -s /sbin/nologin -d %homedir -M -c '%gecos' -g %username %username &>/dev/null || :
+getent group %{username} > /dev/null || groupadd -r %{username}
+getent passwd %{username} > /dev/null || \
+    useradd -r -g %{username} -d %{homedir} -s /sbin/nologin \
+    -c '%{gecos}' %{username}
+exit 0
 
 %post
-if [ $1 -eq 1 ] ; then 
-    # Initial installation 
-    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
-fi
+/sbin/chkconfig --add mt-daapd
 
 %preun
 if [ $1 -eq 0 ] ; then
     # Package removal, not upgrade
-    /bin/systemctl --no-reload disable mt-daapd.service > /dev/null 2>&1 || :
-    /bin/systemctl stop mt-daapd.service > /dev/null 2>&1 || :
+    /sbin/service mt-daapd stop > /dev/null 2>&1
+    /sbin/chkconfig --del mt-daapd
 fi
-
-%postun
-%__fe_userdel  %username &>/dev/null || :
-%__fe_groupdel %username &>/dev/null || :
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
-if [ $1 -ge 1 ] ; then
-    # Package upgrade, not uninstall
-    /bin/systemctl try-restart mt-daapd.service >/dev/null 2>&1 || :
-fi
-
-%triggerun -- mt-daapd < 0.2.4.2-9
-# Save the current service runlevel info
-# User must manually run systemd-sysv-convert --apply mt-daapd
-# to migrate them to systemd targets
-/usr/bin/systemd-sysv-convert --save mt-daapd >/dev/null 2>&1 ||:
-
-# Run these because the SysV package being removed won't do them
-/sbin/chkconfig --del mt-daapd >/dev/null 2>&1 || :
-/bin/systemctl try-restart mt-daapd.service >/dev/null 2>&1 || :
 
 %files
 %config(noreplace) %{_sysconfdir}/mt-daapd.conf
+%{_initddir}/mt-daapd
 %{_sbindir}/mt-daapd
 %{_datadir}/mt-daapd
-%{_unitdir}/%{name}.service
 %attr(0700,mt-daapd,root) %{_localstatedir}/cache/mt-daapd
 %doc AUTHORS COPYING CREDITS NEWS README TODO
 
