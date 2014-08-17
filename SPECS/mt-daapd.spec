@@ -2,21 +2,23 @@
 %global homedir %_var/lib/%username
 %global gecos mt-daapd
 
+%define basever 1696
+
 Summary: An iTunes-compatible media server
 Name: mt-daapd
-Epoch: 1
-Version: 0.2.4.2
-Release: 15%{?dist}
+Epoch: 2
+Version: r%{basever}
+Release: 1%{?dist}
 License: GPLv2+
 Group: Applications/Multimedia
-Source0: http://downloads.sourceforge.net/%{name}/%{name}-%{version}.tar.gz
+Source0: http://distcache.FreeBSD.org/ports-distfiles/%{name}-svn-%{basever}.tar.gz
 Source1: %{name}.service
 Patch0: mt-daapd-0.2.4.2-defaults.patch
 Patch1: mt-daapd-0.2.4.2-fedora.patch
 Url: http://www.fireflymediaserver.org/
 BuildRequires: gdbm-devel, avahi-devel, zlib-devel
 BuildRequires: flac-devel, libogg-devel, libvorbis-devel
-BuildRequires: libid3tag-devel, sqlite-devel
+BuildRequires: libid3tag-devel, sqlite-devel, gcc-c++
 Requires(pre): shadow-utils
 
 %description
@@ -26,9 +28,9 @@ the widest variety of digital music content over the widest range of
 devices.
 
 %prep
-%setup -q
-%patch0 -p1 -b .defaults
-%patch1 -p1 -b .fedora
+%setup -q -n %{name}-svn-%{basever}
+#%patch0 -p1 -b .defaults
+#%patch1 -p1 -b .fedora
 
 %build
 %configure --enable-avahi --enable-oggvorbis --enable-sqlite3 --enable-flac
@@ -40,7 +42,7 @@ mkdir -p %{buildroot}%{_localstatedir}/cache/mt-daapd
 mkdir -p %{buildroot}%{_sysconfdir}
 mkdir -p %{buildroot}%{_initddir}
 install -m 0640 contrib/mt-daapd.conf %{buildroot}%{_sysconfdir}/
-install -m 0755 contrib/mt-daapd %{buildroot}%{_initddir}/
+install -m 0755 contrib/init.d/mt-daapd-fedora %{buildroot}%{_initddir}/mt-daapd
 
 %pre
 getent group %{username} > /dev/null || groupadd -r %{username}
@@ -64,6 +66,9 @@ fi
 %{_initddir}/mt-daapd
 %{_sbindir}/mt-daapd
 %{_datadir}/mt-daapd
+%{_bindir}/mt-daapd-ssc.sh
+%{_bindir}/wavstreamer
+%{_libdir}/mt-daapd/plugins/*
 %attr(0700,mt-daapd,root) %{_localstatedir}/cache/mt-daapd
 %doc AUTHORS COPYING CREDITS NEWS README TODO
 
