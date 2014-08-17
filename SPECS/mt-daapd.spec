@@ -6,7 +6,7 @@ Summary: An iTunes-compatible media server
 Name: mt-daapd
 Epoch: 1
 Version: 0.2.4.2
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv2+
 Group: Applications/Multimedia
 Source0: http://downloads.sourceforge.net/%{name}/%{name}-%{version}.tar.gz
@@ -68,6 +68,9 @@ fi
 %doc AUTHORS COPYING CREDITS NEWS README TODO
 
 %changelog
+* Sun Aug 17 2014 RJ Bergeron <rpm@arrjay.net> - 1:0.2.4.2-15
+- Rebuild for EL6, drop systemd and fedora user management
+
 * Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:0.2.4.2-14
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
 
