@@ -7,14 +7,14 @@ gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-arrjay.net
 
 [arrjay-debuginfo]
 name=Arrjay.net Packages for Enterprise Linux $releasever - $basearch - Debug
-baseurl=http://arrjay.github.io/rpm/el$releasever/$basearch/debug
+baseurl=http://arrjay.github.io/rpm/el$releasever/$basearch-debug
 enabled=0
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-arrjay.net
 gpgcheck=1
 
 [arrjay-source]
-name=Arrjay.net Packages for Enterprise Linux $releasever - $basearch - Source
-baseurl=http://arrjay.github.io/rpm/el$releasever/SRPMS
+name=Arrjay.net Packages for Enterprise Linux Sources
+baseurl=http://arrjay.github.io/rpm/SRPMS
 enabled=0
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-arrjay.net
 gpgcheck=1
