@@ -1,6 +1,8 @@
+%global internalname rpm
+%global internalversion 0
 Name:           arrjay-release
 Version:        7
-Release:        1
+Release:        2
 Summary:        Arrjay.net Packages for Enterprise Linux repository configuration
 
 Group:          System Environment/Base
@@ -11,6 +13,7 @@ License:        BSD
 # within this srpm.
 Source0:        RPM-GPG-KEY-arrjay.net
 Source1:	arrjay.repo
+Source2:	https://github.com/arrjay/%{internalname}/archive/v%{internalversion}/%{internalname}-v%{internalversion}.tar.gz
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -25,6 +28,7 @@ install -pm 644 %{SOURCE0} .
 install -pm 644 %{SOURCE1} .
 
 %build
+tar xf %{SOURCE2}
 
 
 %install
@@ -39,6 +43,10 @@ install -dm 755 $RPM_BUILD_ROOT%{_sysconfdir}/yum.repos.d
 install -pm 644 %{SOURCE1} \
     $RPM_BUILD_ROOT%{_sysconfdir}/yum.repos.d
 
+# mock configs
+install -dm 755 $RPM_BUILD_ROOT%{_sysconfdir}/mock
+tar -x --strip-components=1 -f %{SOURCE2} -C $RPM_BUILD_ROOT%{_sysconfdir}/mock
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -50,6 +58,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %config(noreplace) /etc/yum.repos.d/*
 /etc/pki/rpm-gpg/*
+%{_sysconfdir}/mock/arrjay*
 
 
 %changelog
