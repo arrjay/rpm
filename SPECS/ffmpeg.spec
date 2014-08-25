@@ -9,6 +9,8 @@
 %global _without_frei0r   1
 %global _without_opencv   1
 %global _without_vpx      1
+%global _without_cdio     1
+%global _without_x264     1
 %endif
 %if 0%{?fedora} >= 19
 %global _without_cdio     1
@@ -17,7 +19,7 @@
 Summary:        Digital VCR and streaming server
 Name:           ffmpeg
 Version:        1.2.7
-Release:        1%{?date}%{?date:git}%{?rel}%{?dist}
+Release:        2%{?date}%{?date:git}%{?rel}%{?dist}
 %if 0%{?_with_amr:1}
 License:        GPLv3+
 %else
@@ -291,6 +293,9 @@ mv $RPM_BUILD_ROOT%{_mandir}/man1/lib*.3 $RPM_BUILD_ROOT%{_mandir}/man3
 
 
 %changelog
+* Sun Aug 24 2014 RJ Bergeron <rpm@arrjay.net> - 1.2.7-2
+- rebuild for el7 - a pass without x264
+
 * Tue Jun 24 2014 Julian Sikorski <belegdol@fedoraproject.org> - 1.2.7-1
 - Updated to 1.2.7
 
