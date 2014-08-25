@@ -1,6 +1,6 @@
 Name: dmapd
-Version: 0.0.55
-Release: 2%{?dist}
+Version: 0.0.70
+Release: 1%{?dist}
 Summary: A server that provides DAAP and DPAP shares
 
 Group: Applications/Multimedia
@@ -8,7 +8,8 @@ License: GPLv2+
 URL: http://www.flyn.org/projects/dmapd/
 Source0: http://www.flyn.org/projects/%name/%{name}-%{version}.tar.gz
 
-BuildRequires: libdmapsharing-devel >= 2.9.18, vips-devel, gstreamer1-devel
+BuildRequires: libdmapsharing-devel >= 2.9.18, vips-devel >= 7.36, gstreamer1-devel
+BuildRequires: gstreamer1-plugins-base-devel
 Requires(pre): shadow-utils
 Requires(post): systemd-units systemd-sysv
 Requires(preun): systemd-units
@@ -126,6 +127,9 @@ resources needed for developing modules using dmapd's API.
 %ghost %attr(0600,root,root) %{_localstatedir}/lock/subsys/dmapd
 
 %changelog
+* Mon Aug 25 2014 RJ Bergeron <rpm@arrjay.net> 0.0.70-1
+- update to 0.0.70, build on el7(-ish)
+
 * Fri Jul 05 2013 W. Michael Petullo <mike[@]flyn.org> 0.0.55-2
 - Remove dmapd-vips-7.32.patch
 
