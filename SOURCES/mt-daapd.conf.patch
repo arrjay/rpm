@@ -1,0 +1,11 @@
+diff -uNr mt-daapd-svn-1696/contrib/mt-daapd.conf.templ mt-daapd-svn-1696.rpm/contrib/mt-daapd.conf.templ
+--- mt-daapd-svn-1696/contrib/mt-daapd.conf.templ	2014-08-27 23:33:45.088967080 -0400
++++ mt-daapd-svn-1696.rpm/contrib/mt-daapd.conf.templ	2014-08-27 23:34:49.806595116 -0400
+@@ -287,3 +287,7 @@
+ # should m3u files be processed?
+ #
+ process_m3u = 1
++
++# should symlinks be followed?
++#
++follow_symlinks = 0

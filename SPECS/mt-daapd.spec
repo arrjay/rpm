@@ -8,7 +8,7 @@ Summary: An iTunes-compatible media server
 Name: mt-daapd
 Epoch: 2
 Version: r%{basever}
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: Applications/Multimedia
 Source0: http://distcache.FreeBSD.org/ports-distfiles/%{name}-svn-%{basever}.tar.gz
@@ -16,11 +16,21 @@ Source1: %{name}.service
 Patch0: mt-daapd-svn-defaults.patch
 Patch1: mt-daapd-svn-fedora.patch
 Patch2: patch-plugins_out-daap.c
+Patch3: mt-daapd.conf.patch
 Url: http://www.fireflymediaserver.org/
 BuildRequires: gdbm-devel, avahi-devel, zlib-devel
 BuildRequires: flac-devel, libogg-devel, libvorbis-devel
 BuildRequires: libid3tag-devel, sqlite-devel, gcc-c++
+%if 0%{?rhel} >= 7
+BuildRequires: systemd-units
+Requires(pre):   /usr/sbin/useradd
+Requires(post): systemd-sysv
+Requires(post): systemd-units
+Requires(preun): systemd-units
+Requires(postun): systemd-units
+%else
 Requires(pre): shadow-utils
+%endif
 
 %description
 The purpose of this project is built the best server software to serve
@@ -33,6 +43,7 @@ devices.
 %patch0 -p1 -b .defaults
 %patch1 -p1 -b .fedora
 %patch2 -p0 -b .itunes10
+%patch3 -p1 -b .conf
 
 %build
 %configure --enable-avahi --enable-oggvorbis --enable-sqlite3 --enable-flac
@@ -42,9 +53,14 @@ make %{?_smp_mflags}
 make DESTDIR=%{buildroot} install
 mkdir -p %{buildroot}%{_localstatedir}/cache/mt-daapd
 mkdir -p %{buildroot}%{_sysconfdir}
-mkdir -p %{buildroot}%{_initddir}
 install -m 0640 contrib/mt-daapd.conf %{buildroot}%{_sysconfdir}/
+%if 0%{?rhel} >= 7
+mkdir -p %{buildroot}%{_unitdir}
+install %{SOURCE1} %{buildroot}%{_unitdir}/
+%else
+mkdir -p %{buildroot}%{_initddir}
 install -m 0755 contrib/init.d/mt-daapd-fedora %{buildroot}%{_initddir}/mt-daapd
+%endif
 
 %pre
 getent group %{username} > /dev/null || groupadd -r %{username}
@@ -54,18 +70,44 @@ getent passwd %{username} > /dev/null || \
 exit 0
 
 %post
-/sbin/chkconfig --add mt-daapd
+if [ $1 -eq 1 ] ; then 
+    # Initial installation 
+%if 0%{?rhel} >= 7
+    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+%else
+    /sbin/chkconfig --add mt-daapd
+%endif
+fi
+
 
 %preun
 if [ $1 -eq 0 ] ; then
     # Package removal, not upgrade
+%if 0%{?rhel} >= 7
+    /bin/systemctl --no-reload disable mt-daapd.service > /dev/null 2>&1 || :
+    /bin/systemctl stop mt-daapd.service > /dev/null 2>&1 || :
+%else
     /sbin/service mt-daapd stop > /dev/null 2>&1
     /sbin/chkconfig --del mt-daapd
+%endif
 fi
+
+%if 0%{?rhel} >= 7
+%postun
+/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+if [ $1 -ge 1 ] ; then
+    # Package upgrade, not uninstall
+    /bin/systemctl try-restart mt-daapd.service >/dev/null 2>&1 || :
+fi
+%endif
 
 %files
 %config(noreplace) %{_sysconfdir}/mt-daapd.conf
+%if 0%{?rhel} >= 7
+%{_unitdir}/%{name}.service
+%else
 %{_initddir}/mt-daapd
+%endif
 %{_sbindir}/mt-daapd
 %{_datadir}/mt-daapd
 %{_bindir}/mt-daapd-ssc.sh
@@ -75,6 +117,10 @@ fi
 %doc AUTHORS COPYING CREDITS NEWS README TODO
 
 %changelog
+* Wed Aug 27 2014 RJ Bergeron <rpm@arrjay.net> - 2:r1696-3
+- bring back systemd units for EL7 platforms.
+- patch sample config to mention symlink following
+
 * Sun Aug 17 2014 RJ Bergeron <rpm@arrjay.net> - 2:r1696-2
 - patch for iTunes 10 compatibility.
 
