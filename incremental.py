@@ -35,7 +35,7 @@ if not os.path.isdir("SPECS"):
 
 try:
     buildarchs = defarchs[platform.machine()]
-except:
+except KeyError:
     print(platform.machine(), "has no defined architectures")
     exit()
 
