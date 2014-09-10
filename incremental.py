@@ -4,6 +4,7 @@ import platform
 import os
 import subprocess
 import shutil
+import pexpect
 
 # we don't bother importing python rpm bindings, as we're interacting with
 # rpmbuild, which the bindings don't support.
@@ -24,7 +25,7 @@ mockmap = {'el6': '6', 'el5': '5', 'el7': '7'}
 defarchs = {'x86_64': ['x86_64']}
 
 # directory full of binaries
-outputdir = '/home/rjlocal/src/rpm-www'
+outputdir = '/home/rjlocal/itrpm-www'
 
 # directory where mock runs
 mockdir = '/var/lib/mock'
@@ -77,8 +78,8 @@ for dist in dists:
                 # drop to next spec if dist is unsupported.
                 if not build_dist:
                     continue
-            # skip the actual supported-dists files.
-            if '.supported-dists' in spec:
+            # skip any non-spec files.
+            if not spec.endswith('.spec'):
                 continue
             # rpmspec likes to print warnings at this point, sometimes. we
             # don't really care.
@@ -165,11 +166,14 @@ for mock_tuple in mockups:
 
 # if we got to this point, all the binries successfully built. so, sign
 # the srpms
-rpmsign = ['rpm', '--addsign']
-rpmsign.extend(new_srpms.values())
+srpm_string = ' '.join(new_srpms.values())
 try:
-    subprocess.check_call(rpmsign)
-except Exception:
+    signatory = pexpect.spawn('rpm --addsign '+srpm_string)
+    signatory.logfile = open('/tmp/rpmsig.1', 'wb')
+    cli = signatory.expect(['Enter pass phrase: '])
+    if cli == 0:
+      signatory.sendline('')
+except:
     raise Exception('RPMSIGN FAILED')
 
 # now sign the RPMs per output directory. note that check_call here uses shell globbing.
@@ -178,9 +182,11 @@ for mock_tuple in mockups:
     distdata = mock_tuple.split('-')
     reposub = mockrevmap[distdata[1]]
     try:
-        subprocess.check_call(
-            'rpm --addsign ' + reposub + '/' + distdata[2] + '/*.rpm', shell=True)
-    except Exception:
+        signatory = pexpect.spawn('rpm --addsign ' + reposub + '/' + distdata[2] + '/*.rpm')
+        cli = signatory.expect(['Enter pass phrase: '])
+        if cli == 0:
+          signatory.sendline('')
+    except:
         raise Exception('RPMSIGN FAILED')
 
 # push staged binaries into repo
