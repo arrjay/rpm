@@ -60,6 +60,9 @@ for dist in dists:
         buildarchs.remove('i386')
 
     for arch in buildarchs:
+        if not os.path.isdir("SPECS"):
+            raise Exception("There is no SPECS directory")
+
         for spec in os.listdir('SPECS'):
             # not all our specs/srpms actually build on all dists. this lets us
             # specify where to build.
