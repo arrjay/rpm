@@ -33,7 +33,6 @@ mockdir = '/var/lib/mock'
 if not os.path.isdir("SPECS"):
     raise Exception("There is no SPECS directory")
 
-
 try:
     buildarchs = defarchs[platform.machine()]
 except:
@@ -171,7 +170,6 @@ rpmsign.extend(new_srpms.values())
 try:
     subprocess.check_call(rpmsign)
 except Exception as e:
-    print 'RPMSIGN FAILED(' + str(e) + ')'
     raise Exception('RPMSIGN FAILED')
 
 # now sign the RPMs per output directory. note that check_call here uses shell globbing.
@@ -183,7 +181,6 @@ for mock_tuple in mockups:
         subprocess.check_call(
             'rpm --addsign ' + reposub + '/' + distdata[2] + '/*.rpm', shell=True)
     except Exception as e:
-        print 'RPMSIGN FAILED(' + str(e) + ')'
         raise Exception('RPMSIGN FAILED')
 
 # push staged binaries into repo
@@ -194,7 +191,6 @@ for mock_tuple in mockups:
         subprocess.check_call('cp ' + reposub + '/' + distdata[
                               2] + '/*.rpm ' + outputdir + '/' + reposub + '/' + distdata[2], shell=True)
     except Exception as e:
-        print 'REPO COPYIN FAILED(' + str(e) + ')'
         raise Exception('REPO COPYIN FAILED')
     # handle debuginfo
     debugfiles = os.listdir(reposub + '/' + distdata[2] + '-debug')
@@ -203,7 +199,6 @@ for mock_tuple in mockups:
             subprocess.check_call('cp ' + reposub + '/' + distdata[
                                   2] + '-debug/*.rpm ' + outputdir + '/' + reposub + '/' + distdata[2] + '-debug', shell=True)
         except Exception as e:
-            print 'REPO DEBUG COPYIN FAILED(' + str(e) + ')'
             raise Exception('REPO DEBUG COPYIN FAILED')
 
 # push staged SRPMS into repo
@@ -213,7 +208,6 @@ srpm_cp.extend([outputdir + '/SRPMS'])
 try:
     subprocess.check_call(srpm_cp)
 except Exception as e:
-    print 'SRPM COPYIN FAILED(' + str(e) + ')'
     raise Exception('SRPM COPYIN FAILED')
 
 # update binary repos
@@ -224,12 +218,10 @@ for mock_tuple in mockups:
         subprocess.check_call(
             ['createrepo', outputdir + '/' + reposub + '/' + distdata[2]])
     except Exception as e:
-        print 'CREATEREPO FAILED (' + str(e) + ')'
         raise Exception('CREATEREPO FAILED')
 
 # update SRPM repo
 try:
     subprocess.check_call(['createrepo', outputdir + '/SRPMS'])
 except Exception as e:
-    print 'CREATEREPO FAILED (' + str(e) + ')'
     raise Exception('CREATEREPO FAILED')
