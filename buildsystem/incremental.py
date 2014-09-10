@@ -104,8 +104,8 @@ tobuild.update(
 for binary in tobuild:
     buildspecs.add(bin2spec[binary][0])
     if not bin2spec[binary][1] in mockups:
-        mockups[bin2spec[binary][1]] = []
-    mockups[bin2spec[binary][1]].append(bin2spec[binary][0])
+        mockups[bin2spec[binary][1]] = set()
+    mockups[bin2spec[binary][1]].add(bin2spec[binary][0])
 
 # if there isn't anything *to* build, that's actually an error.
 if not buildspecs:
