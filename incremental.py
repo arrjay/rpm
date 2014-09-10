@@ -29,6 +29,11 @@ outputdir = '/home/rjlocal/src/rpm-www'
 # directory where mock runs
 mockdir = '/var/lib/mock'
 
+# do we have a SPECS directory?
+if not os.path.isdir("SPECS"):
+    raise Exception("There is no SPECS directory")
+
+
 try:
     buildarchs = defarchs[platform.machine()]
 except:
@@ -60,9 +65,6 @@ for dist in dists:
         buildarchs.remove('i386')
 
     for arch in buildarchs:
-        if not os.path.isdir("SPECS"):
-            raise Exception("There is no SPECS directory")
-
         for spec in os.listdir('SPECS'):
             # not all our specs/srpms actually build on all dists. this lets us
             # specify where to build.
