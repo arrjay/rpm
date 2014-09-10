@@ -169,7 +169,6 @@ for mock_tuple in mockups:
 srpm_string = ' '.join(new_srpms.values())
 try:
     signatory = pexpect.spawn('rpm --addsign '+srpm_string)
-    signatory.logfile = open('/tmp/rpmsig.1', 'wb')
     cli = signatory.expect(['Enter pass phrase: '])
     if cli == 0:
       signatory.sendline('')
