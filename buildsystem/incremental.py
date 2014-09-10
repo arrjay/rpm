@@ -143,25 +143,25 @@ for mock_tuple in mockups:
             print 'MOCK FAILED (' + str(e) + ') MOCK LOGS PROCEED'
             # dump only the build and state logs to stdout so we easily see it.
             # root.log is Not That Helpful.
-            for file in ['state.log', 'build.log']:
-                f = open(mockdir + '/' + mock_tuple + '/result/' + file, 'r')
+            for logfile in ['state.log', 'build.log']:
+                f = open(mockdir + '/' + mock_tuple + '/result/' + logfile, 'r')
                 text = f.read()
                 print text
                 f.close()
             raise Exception('MOCK FAILED')
         # if we got to here, mock should be good. snarf the rpms and stuff in
         # appropriate repos.
-        for file in os.listdir(mockdir + '/' + mock_tuple + '/result/'):
-            if file.endswith('.rpm'):
+        for rpmfile in os.listdir(mockdir + '/' + mock_tuple + '/result/'):
+            if rpmfile.endswith('.rpm'):
                 # skip srpms
-                if file.endswith('.src.rpm'):
+                if rpmfile.endswith('.src.rpm'):
                     continue
-                if '-debuginfo-' in file:
+                if '-debuginfo-' in rpmfile:
                     shutil.copy2(
-                        mockdir + '/' + mock_tuple + '/result/' + file, reposub + '/' + distdata[2] + '-debug/')
+                        mockdir + '/' + mock_tuple + '/result/' + rpmfile, reposub + '/' + distdata[2] + '-debug/')
                 else:
                     shutil.copy2(
-                        mockdir + '/' + mock_tuple + '/result/' + file, reposub + '/' + distdata[2])
+                        mockdir + '/' + mock_tuple + '/result/' + rpmfile, reposub + '/' + distdata[2])
 
 # if we got to this point, all the binries successfully built. so, sign
 # the srpms
@@ -169,7 +169,7 @@ rpmsign = ['rpm', '--addsign']
 rpmsign.extend(new_srpms.values())
 try:
     subprocess.check_call(rpmsign)
-except Exception as e:
+except Exception:
     raise Exception('RPMSIGN FAILED')
 
 # now sign the RPMs per output directory. note that check_call here uses shell globbing.
@@ -180,7 +180,7 @@ for mock_tuple in mockups:
     try:
         subprocess.check_call(
             'rpm --addsign ' + reposub + '/' + distdata[2] + '/*.rpm', shell=True)
-    except Exception as e:
+    except Exception:
         raise Exception('RPMSIGN FAILED')
 
 # push staged binaries into repo
@@ -190,7 +190,7 @@ for mock_tuple in mockups:
     try:
         subprocess.check_call('cp ' + reposub + '/' + distdata[
                               2] + '/*.rpm ' + outputdir + '/' + reposub + '/' + distdata[2], shell=True)
-    except Exception as e:
+    except Exception:
         raise Exception('REPO COPYIN FAILED')
     # handle debuginfo
     debugfiles = os.listdir(reposub + '/' + distdata[2] + '-debug')
@@ -198,7 +198,7 @@ for mock_tuple in mockups:
         try:
             subprocess.check_call('cp ' + reposub + '/' + distdata[
                                   2] + '-debug/*.rpm ' + outputdir + '/' + reposub + '/' + distdata[2] + '-debug', shell=True)
-        except Exception as e:
+        except Exception:
             raise Exception('REPO DEBUG COPYIN FAILED')
 
 # push staged SRPMS into repo
@@ -207,7 +207,7 @@ srpm_cp.extend(new_srpms.values())
 srpm_cp.extend([outputdir + '/SRPMS'])
 try:
     subprocess.check_call(srpm_cp)
-except Exception as e:
+except Exception:
     raise Exception('SRPM COPYIN FAILED')
 
 # update binary repos
@@ -217,11 +217,11 @@ for mock_tuple in mockups:
     try:
         subprocess.check_call(
             ['createrepo', outputdir + '/' + reposub + '/' + distdata[2]])
-    except Exception as e:
+    except Exception:
         raise Exception('CREATEREPO FAILED')
 
 # update SRPM repo
 try:
     subprocess.check_call(['createrepo', outputdir + '/SRPMS'])
-except Exception as e:
+except Exception:
     raise Exception('CREATEREPO FAILED')
