@@ -1,0 +1,206 @@
+#!/usr/bin/env python
+
+import platform
+import os
+import subprocess
+import shutil
+
+# we don't bother importing python rpm bindings, as we're interacting with rpmbuild, which the bindings don't support.
+
+## tuneables
+# mock chroot base to use
+mockroot = 'epel'
+
+# distributions to build for
+#dists = ['el5', 'el6', 'el7']
+dists = ['el6']
+
+# map dist tags back to mock sub-component
+mockmap = {'el6' : '6', 'el5' : '5', 'el7' : '7'}
+
+# architectures to build for given a particular cpu
+#defarchs = {'x86_64' : ['x86_64', 'i386']}
+defarchs = {'x86_64' : ['x86_64']}
+
+# directory full of binaries
+outputdir = '/home/rjlocal/src/rpm-www'
+
+# directory where mock runs
+mockdir = '/var/lib/mock'
+
+try:
+  buildarchs = defarchs[platform.machine()]
+except:
+  print(platform.machine(),"has no defined architectures")
+  exit()
+
+# reverse the mock mapping so we can use it later, too
+mockrevmap = dict((v,k) for k, v in mockmap.iteritems())
+
+# wrench open the null device
+NUL = open(os.devnull, "w")
+
+# holder for rpm binary outputs
+bin2spec   = {}    # for a given binary, what spec would buld it? what mock chroot does it live in? what is the dist tag? what is the arch?
+binaries   = set() # all the binaries possible
+tobuild    = set() # missing binaries
+buildspecs = set() # the collection of specs needed to produce needed binaries
+new_srpms  = {}    # for a given spec, what SRPM is the result?
+mockups    = {}    # for a given chroot, what specs need to be built?
+
+# okay, for every file in the spec directory, see if we can get the resulting rpm name(s)
+for dist in dists:
+
+  # dist-specific hacks: there is no el7 i386
+  if dist == 'el7':
+    buildarchs.remove('i386')
+
+  for arch in buildarchs:
+    for spec in os.listdir('SPECS'):
+      # not all our specs/srpms actually build on all dists. this lets us specify where to build.
+      if os.path.isfile('SPECS/'+spec+'.supported-dists'):
+        build_dist = False	# don't build unless...
+        f = open('SPECS/'+spec+'.supported-dists')
+        for line in f:
+          if dist in line:
+            build_dist = True
+        f.close()
+        # drop to next spec if dist is unsupported.
+        if not build_dist:
+          continue
+      # skip the actual supported-dists files.
+      if '.supported-dists' in spec:
+        continue
+      # rpmspec likes to print warnings at this point, sometimes. we don't really care.
+      rpmpkgnames = subprocess.check_output(['rpmspec','-q','--target='+arch,'-D','dist .'+dist,'SPECS/'+spec], stderr=NUL)
+      for line in rpmpkgnames.splitlines():
+        # these paths are just ones I made up that work *for me*
+        mock_dist = mockmap[dist]
+        mock_tuple = mockroot+'-'+mock_dist+'-'+arch
+        bin2spec[dist+'/'+arch+'/'+line+'.rpm'] = [spec,mock_tuple]
+
+# now, flatten bin2spec
+for binary in bin2spec.keys():
+  binaries.add(binary)
+
+# splay that back out and see if packages exist. hahahaha.
+tobuild.update([binary for binary in binaries if not os.path.isfile(outputdir+'/'+binary)])
+
+# which then turns in to specs and mock calls we need.
+for binary in tobuild:
+  buildspecs.add(bin2spec[binary][0])
+  if not bin2spec[binary][1] in mockups:
+    mockups[bin2spec[binary][1]] = []
+  mockups[bin2spec[binary][1]].append(bin2spec[binary][0])
+
+# if there isn't anything *to* build, that's actually an error.
+if not buildspecs:
+  raise Exception("There is nothing to build")
+
+# make all the SRPMS - unsigned for mock
+# rpmspec can't give you the package name, so we have to grovel the rpmbuild -bs output.
+# I don't *think* you can have a spec produce multiple SRPMS, but if I'm wrong, you'll want to rethink your life^Wcode here.
+for spec in buildspecs:
+  rpm_srpmoutput = subprocess.check_output(['rpmbuild','-bs','SPECS/'+spec], stderr=NUL)
+  for line in rpm_srpmoutput.splitlines():
+    if line.startswith('Wrote: '):
+      fields = line.partition(': ')
+      new_srpms[spec] = fields[2]
+
+# build all the RPMS
+for mock_tuple in mockups:
+  print "Building rpms for "+mock_tuple
+  # if playing with the createrpo scructures you probably want to alter the code here.
+  distdata=mock_tuple.split('-')
+  reposub=mockrevmap[distdata[1]]
+  # we really don't want this directory to exist until we started the build, so I approve blowing up if it did.
+  os.makedirs(reposub+'/'+distdata[2])
+  os.makedirs(reposub+'/'+distdata[2]+'-debug')
+  for spec in mockups[mock_tuple]:
+    # mock scribbles all over stderr. let it. we'll check if any RPMs showed up next.
+    try:
+      subprocess.check_call(['mock','-r',mock_tuple,'--rebuild',new_srpms[spec]])
+    except Exception as e:
+      print 'MOCK FAILED ('+str(e)+') MOCK LOGS PROCEED'
+      # dump only the build and state logs to stdout so we easily see it. root.log is Not That Helpful.
+      for file in ['state.log','build.log']:
+        f = open(mockdir+'/'+mock_tuple+'/result/'+file, 'r')
+        text = f.read()
+        print text
+        f.close()
+      raise Exception('MOCK FAILED')
+    # if we got to here, mock should be good. snarf the rpms and stuff in appropriate repos.
+    for file in os.listdir(mockdir+'/'+mock_tuple+'/result/'):
+      if file.endswith('.rpm'):
+        # skip srpms
+        if file.endswith('.src.rpm'):
+          continue
+        if '-debuginfo-' in file:
+          shutil.copy2(mockdir+'/'+mock_tuple+'/result/'+file,reposub+'/'+distdata[2]+'-debug/')
+        else:
+          shutil.copy2(mockdir+'/'+mock_tuple+'/result/'+file,reposub+'/'+distdata[2])
+
+# if we got to this point, all the binries successfully built. so, sign the srpms
+rpmsign=['rpm','--addsign']
+rpmsign.extend(new_srpms.values())
+try:
+  subprocess.check_call(rpmsign)
+except Exception as e:
+  print 'RPMSIGN FAILED('+str(e)+')'
+  raise Exception('RPMSIGN FAILED')
+
+# now sign the RPMs per output directory. note that check_call here uses shell globbing.
+# we don't sign debuginfo (today?)
+for mock_tuple in mockups:
+  distdata=mock_tuple.split('-')
+  reposub=mockrevmap[distdata[1]]
+  try:
+    subprocess.check_call('rpm --addsign '+reposub+'/'+distdata[2]+'/*.rpm',shell=True)
+  except Exception as e:
+    print 'RPMSIGN FAILED('+str(e)+')'
+    raise Exception('RPMSIGN FAILED')
+
+# push staged binaries into repo
+for mock_tuple in mockups:
+  distdata=mock_tuple.split('-')
+  reposub=mockrevmap[distdata[1]]
+  try:
+    subprocess.check_call('cp '+reposub+'/'+distdata[2]+'/*.rpm '+outputdir+'/'+reposub+'/'+distdata[2],shell=True)
+  except Exception as e:
+    print 'REPO COPYIN FAILED('+str(e)+')'
+    raise Exception('REPO COPYIN FAILED')
+  # handle debuginfo
+  debugfiles = os.listdir(reposub+'/'+distdata[2]+'-debug')
+  if debugfiles:
+    try:
+      subprocess.check_call('cp '+reposub+'/'+distdata[2]+'-debug/*.rpm '+outputdir+'/'+reposub+'/'+distdata[2]+'-debug',shell=True)
+    except Exception as e:
+      print 'REPO DEBUG COPYIN FAILED('+str(e)+')'
+      raise Exception('REPO DEBUG COPYIN FAILED')
+
+# push staged SRPMS into repo
+srpm_cp=['cp']
+srpm_cp.extend(new_srpms.values())
+srpm_cp.extend([outputdir+'/SRPMS'])
+try:
+  subprocess.check_call(srpm_cp)
+except Exception as e:
+  print 'SRPM COPYIN FAILED('+str(e)+')'
+  raise Exception('SRPM COPYIN FAILED')
+
+# update binary repos
+for mock_tuple in mockups:
+  distdata=mock_tuple.split('-')
+  reposub=mockrevmap[distdata[1]]
+  try:
+    subprocess.check_call(['createrepo',outputdir+'/'+reposub+'/'+distdata[2]])
+  except Exception as e:
+    print 'CREATEREPO FAILED ('+str(e)+')'
+    raise Exception('CREATEREPO FAILED')
+
+# update SRPM repo
+try:
+  subprocess.check_call(['createrepo',outputdir+'/SRPMS'])
+except Exception as e:
+  print 'CREATEREPO FAILED ('+str(e)+')'
+  raise Exception('CREATEREPO FAILED')
