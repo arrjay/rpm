@@ -11,7 +11,7 @@ import pexpect
 
 # tuneables
 # mock chroot base to use
-mockroot = 'epel'
+mockroot = 'arrjay'
 
 # distributions to build for
 #dists = ['el5', 'el6', 'el7']
@@ -37,7 +37,7 @@ mockcfgs = 'buildsystem/mock'
 rpmmacrodir = 'buildsystem/rpmmacros/'
 
 # basic rpm macro path (we don't want user or system configs!)
-base_rpmmacropath = '/usr/lib/rpm/macros:/usr/lib/rpm/macros.d/macros.*:/usr/lib/rpm/platform/%{_target}/macros:/usr/lib/rpm/fileattrs//*.attr:'
+base_rpmmacropath = '/usr/lib/rpm/macros:/usr/lib/rpm/macros.d/macros.*:/usr/lib/rpm/platform/%{_target}/macros:/usr/lib/rpm/fileattrs/*.attr:'
 
 # do we have a SPECS directory?
 if not os.path.isdir('SPECS'):
@@ -158,7 +158,7 @@ for mock_tuple in mockups:
         # showed up next.
         try:
             subprocess.check_call(
-                ['mock', '-r', mock_tuple, '--rebuild', new_srpms[spec]])
+                ['mock', '--configdir', mockcfgs, '-r', mock_tuple, '--rebuild', new_srpms[spec]])
         except Exception as e:
             print 'MOCK FAILED (' + str(e) + ') MOCK LOGS PROCEED'
             # dump only the build and state logs to stdout so we easily see it.
