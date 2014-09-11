@@ -1,0 +1,5 @@
+%_topdir	%(eval pwd)
+%_sourcedir	%{_topdir}/SOURCES/%{name}
+
+%vendor		"arrjay.net"
+%packager	autobuilder

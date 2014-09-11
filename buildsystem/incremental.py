@@ -30,21 +30,38 @@ outputdir = '/home/rjlocal/itrpm-www'
 # directory where mock runs
 mockdir = '/var/lib/mock'
 
+# directory for mock configs
+mockcfgs = 'buildsystem/mock'
+
+# directory for rpm macros
+rpmmacrodir = 'buildsystem/rpmmacros/'
+
+# basic rpm macro path (we don't want user or system configs!)
+base_rpmmacropath = '/usr/lib/rpm/macros:/usr/lib/rpm/macros.d/macros.*:/usr/lib/rpm/platform/%{_target}/macros:/usr/lib/rpm/fileattrs//*.attr:'
+
 # do we have a SPECS directory?
-if not os.path.isdir("SPECS"):
-    raise Exception("There is no SPECS directory")
+if not os.path.isdir('SPECS'):
+    raise Exception('There is no SPECS directory')
+
+# do we have mock configs?
+if not os.path.isdir(mockcfgs):
+    raise Exception('there is no mock config directory')
+
+# do we have a default rpmrc?
+if not os.path.isfile(rpmmacrodir+'default'):
+    raise Exception('There is no default rpmmacros')
 
 try:
     buildarchs = defarchs[platform.machine()]
 except KeyError:
-    print(platform.machine(), "has no defined architectures")
+    print(platform.machine(), 'has no defined architectures')
     exit()
 
 # reverse the mock mapping so we can use it later, too
 mockrevmap = dict((v, k) for k, v in mockmap.iteritems())
 
 # wrench open the null device
-NUL = open(os.devnull, "w")
+NUL = open(os.devnull, 'w')
 
 # holder for rpm binary outputs
 # for a given binary, what spec would buld it? what mock chroot does it
@@ -109,7 +126,7 @@ for binary in tobuild:
 
 # if there isn't anything *to* build, that's actually an error.
 if not buildspecs:
-    raise Exception("There is nothing to build")
+    raise Exception('There is nothing to build')
 
 # make all the SRPMS - unsigned for mock
 # rpmspec can't give you the package name, so we have to grovel the rpmbuild -bs output.
@@ -117,7 +134,9 @@ if not buildspecs:
 # wrong, you'll want to rethink your life^Wcode here.
 for spec in buildspecs:
     rpm_srpmoutput = subprocess.check_output(
-        ['rpmbuild', '-bs', 'SPECS/' + spec], stderr=NUL)
+        # hardcoded to use default spec because this isn't a sign operation, and mock
+        # can do whatever the hell it likes.
+        ['rpmbuild', '-bs', '--macros', base_rpmmacropath + ':' + rpmmacrodir + 'default', 'SPECS/' + spec], stderr=NUL)
     for line in rpm_srpmoutput.splitlines():
         if line.startswith('Wrote: '):
             fields = line.partition(': ')
