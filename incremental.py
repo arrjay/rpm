@@ -14,8 +14,7 @@ import pexpect
 mockroot = 'arrjay'
 
 # distributions to build for
-#dists = ['el5', 'el6', 'el7']
-dists = ['el6', 'el7']
+dists = ['el5', 'el6', 'el7']
 
 # map dist tags back to mock sub-component
 mockmap = {'el6': '6', 'el5': '5', 'el7': '7'}
@@ -78,8 +77,9 @@ mockups = {}    # for a given chroot, what specs need to be built?
 for dist in dists:
 
     # dist-specific hacks: there is no el7 i386
-    #if dist == 'el7':
-    #    buildarchs.remove('i386')
+    if dist == 'el7':
+        if 'i386' in buildarchs:
+            buildarchs.remove('i386')
 
     for arch in buildarchs:
         for spec in os.listdir('SPECS'):
