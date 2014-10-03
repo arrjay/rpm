@@ -216,6 +216,7 @@ for mock_tuple in mockups:
 
 # if we got to this point, all the binries successfully built. so, sign
 # the srpms
+print "Signing SRPMS"
 srpm_string = ' '.join(new_srpms.values())
 try:
     signatory = pexpect.spawn('rpm --macros '+base_rpmmacropath+rpmmacrodir+'default --addsign '+srpm_string)
@@ -228,11 +229,12 @@ except:
 
 # now sign the RPMs per output directory. note that check_call here uses shell globbing.
 # we don't sign debuginfo (today?)
+print "Signing built packages"
 for mock_tuple in mockups:
     distdata = mock_tuple.split('-')
     reposub = mockrevmap[distdata[1]]
     try:
-        signatory = pexpect.spawn('rpm --macros '+base_rpmmacropath+rpmmacrodir+reposub+' --addsign ' + reposub + '/' + distdata[2] + '/*.rpm')
+        signatory = pexpect.spawn('/bin/sh -c "rpm --macros '+base_rpmmacropath+rpmmacrodir+reposub+' --addsign ' + reposub + '/' + distdata[2] + '/*.rpm"')
         cli = signatory.expect(['Enter pass phrase: '])
         if cli == 0:
           signatory.sendline('')
