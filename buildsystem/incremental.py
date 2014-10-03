@@ -165,7 +165,7 @@ for spec in buildspecs:
     rpmbuild = subprocess.Popen(
         # hardcoded to use default spec because this isn't a sign operation, and mock
         # can do whatever the hell it likes.
-        ['rpmbuild', '-bs', '--macros', base_rpmmacropath + ':' + rpmmacrodir + 'default', 'SPECS/' + spec], stdout=subprocess.PIPE, stderr=NUL)
+        ['rpmbuild', '-bs', '--macros', base_rpmmacropath + rpmmacrodir + 'default', 'SPECS/' + spec], stdout=subprocess.PIPE, stderr=NUL)
     code = rpmbuild.wait()
     rpm_srpmoutput = rpmbuild.stdout.read()
     for line in rpm_srpmoutput.splitlines():
@@ -218,7 +218,7 @@ for mock_tuple in mockups:
 # the srpms
 srpm_string = ' '.join(new_srpms.values())
 try:
-    signatory = pexpect.spawn('rpm --macros'+base_macropath+':'+rpmmacrodir+'default --addsign '+srpm_string)
+    signatory = pexpect.spawn('rpm --macros'+base_rpmmacropath+rpmmacrodir+'default --addsign '+srpm_string)
     cli = signatory.expect(['Enter pass phrase: '])
     if cli == 0:
       signatory.sendline('')
@@ -231,7 +231,7 @@ for mock_tuple in mockups:
     distdata = mock_tuple.split('-')
     reposub = mockrevmap[distdata[1]]
     try:
-        signatory = pexpect.spawn('rpm --macros'+base_macropath+':'+rpmmacrodir+reposub+' --addsign ' + reposub + '/' + distdata[2] + '/*.rpm')
+        signatory = pexpect.spawn('rpm --macros'+base_rpmmacropath+rpmmacrodir+reposub+' --addsign ' + reposub + '/' + distdata[2] + '/*.rpm')
         cli = signatory.expect(['Enter pass phrase: '])
         if cli == 0:
           signatory.sendline('')
