@@ -218,11 +218,12 @@ for mock_tuple in mockups:
 # the srpms
 srpm_string = ' '.join(new_srpms.values())
 try:
-    signatory = pexpect.spawn('rpm --macros'+base_rpmmacropath+rpmmacrodir+'default --addsign '+srpm_string)
+    signatory = pexpect.spawn('rpm --macros '+base_rpmmacropath+rpmmacrodir+'default --addsign '+srpm_string)
     cli = signatory.expect(['Enter pass phrase: '])
     if cli == 0:
       signatory.sendline('')
 except:
+    print signatory.before
     raise Exception('RPMSIGN FAILED')
 
 # now sign the RPMs per output directory. note that check_call here uses shell globbing.
@@ -231,11 +232,12 @@ for mock_tuple in mockups:
     distdata = mock_tuple.split('-')
     reposub = mockrevmap[distdata[1]]
     try:
-        signatory = pexpect.spawn('rpm --macros'+base_rpmmacropath+rpmmacrodir+reposub+' --addsign ' + reposub + '/' + distdata[2] + '/*.rpm')
+        signatory = pexpect.spawn('rpm --macros '+base_rpmmacropath+rpmmacrodir+reposub+' --addsign ' + reposub + '/' + distdata[2] + '/*.rpm')
         cli = signatory.expect(['Enter pass phrase: '])
         if cli == 0:
           signatory.sendline('')
     except:
+        print signatory.before
         raise Exception('RPMSIGN FAILED')
 
 # push staged binaries into repo
