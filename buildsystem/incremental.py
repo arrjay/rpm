@@ -218,7 +218,7 @@ for mock_tuple in mockups:
 # the srpms
 srpm_string = ' '.join(new_srpms.values())
 try:
-    signatory = pexpect.spawn('rpm --addsign '+srpm_string)
+    signatory = pexpect.spawn('rpm --macros'+base_macropath+':'+rpmmacrodir+'default --addsign '+srpm_string)
     cli = signatory.expect(['Enter pass phrase: '])
     if cli == 0:
       signatory.sendline('')
@@ -231,7 +231,7 @@ for mock_tuple in mockups:
     distdata = mock_tuple.split('-')
     reposub = mockrevmap[distdata[1]]
     try:
-        signatory = pexpect.spawn('rpm --addsign ' + reposub + '/' + distdata[2] + '/*.rpm')
+        signatory = pexpect.spawn('rpm --macros'+base_macropath+':'+rpmmacrodir+reposub+' --addsign ' + reposub + '/' + distdata[2] + '/*.rpm')
         cli = signatory.expect(['Enter pass phrase: '])
         if cli == 0:
           signatory.sendline('')
