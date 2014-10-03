@@ -125,10 +125,10 @@ for dist in dists:
                 # attempt to emulate rpmspec via rpm and linux32. yuck. fortunately, linux32 does work if you're already *on* linux32
                 if arch in linux32_archs:
                     rpmspec = subprocess.Popen(
-                        ['linux32', 'rpm', '-q', '-D', 'disc .' + dist, '--specfile', 'SPECS/' + spec], stdout=subprocess.PIPE, stderr=NUL)
+                        ['linux32', 'rpm', '-q', '-D', 'dist .' + dist, '--specfile', 'SPECS/' + spec], stdout=subprocess.PIPE, stderr=NUL)
                 else:
                     rpmspec = subprocess.Popen(
-                        ['rpm', '-q', '-D', 'disc .' + dist, '--specfile', 'SPECS/' + spec], stdout=subprocess.PIPE, stderr=NUL)
+                        ['rpm', '-q', '-D', 'dist .' + dist, '--specfile', 'SPECS/' + spec], stdout=subprocess.PIPE, stderr=NUL)
             code = rpmspec.wait()
             rpmpkgnames = rpmspec.stdout.read()
             for line in rpmpkgnames.splitlines():
