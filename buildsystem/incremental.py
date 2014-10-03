@@ -23,6 +23,9 @@ mockmap = {'el6': '6', 'el5': '5', 'el7': '7'}
 #defarchs = {'x86_64' : ['x86_64', 'i386']}
 defarchs = {'x86_64': ['x86_64']}
 
+# architectures targetable via linux32 on a 64-bit system.
+linux32_archs = ['i386']
+
 # directory full of binaries
 outputdir = '/home/rjlocal/itrpm-www'
 
@@ -72,6 +75,21 @@ buildspecs = set()  # the collection of specs needed to produce needed binaries
 new_srpms = {}    # for a given spec, what SRPM is the result?
 mockups = {}    # for a given chroot, what specs need to be built?
 
+have_rpmspec = True
+# see if we *have* rpmspec
+try:
+    subprocess.call(['rpmspec', '--quiet'])
+except OSError:
+    have_rpmspec = False
+
+if have_rpmspec is False:
+    # well that sucks. do I have a linux32?
+    have_linux32 = True
+    try:
+        subprocess.call(['linux32', 'rpm', '--quiet'])
+    except OSError:
+        have_linux32 = False
+
 # okay, for every file in the spec directory, see if we can get the
 # resulting rpm name(s)
 for dist in dists:
@@ -100,8 +118,17 @@ for dist in dists:
                 continue
             # rpmspec likes to print warnings at this point, sometimes. we
             # don't really care.
-            rpmspec = subprocess.Popen(
-                ['rpmspec', '-q', '--target=' + arch, '-D', 'dist .' + dist, 'SPECS/' + spec], stdout=subprocess.PIPE, stderr=NUL)
+            if have_rpmspec is True:
+                rpmspec = subprocess.Popen(
+                    ['rpmspec', '-q', '--target=' + arch, '-D', 'dist .' + dist, 'SPECS/' + spec], stdout=subprocess.PIPE, stderr=NUL)
+            else:
+                # attempt to emulate rpmspec via rpm and linux32. yuck. fortunately, linux32 does work if you're already *on* linux32
+                if arch in linux32_archs:
+                    rpmspec = subprocess.Popen(
+                        ['linux32', 'rpm', '-q', '-D', 'disc .' + dist, '--specfile', 'SPECS/' + spec], stdout=subprocess.PIPE, stderr=NUL)
+                else:
+                    rpmspec = subprocess.Popen(
+                        ['rpm', '-q', '-D', 'disc .' + dist, '--specfile', 'SPECS/' + spec], stdout=subprocess.PIPE, stderr=NUL)
             code = rpmspec.wait()
             rpmpkgnames = rpmspec.stdout.read()
             for line in rpmpkgnames.splitlines():
