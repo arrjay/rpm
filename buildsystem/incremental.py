@@ -100,8 +100,10 @@ for dist in dists:
                 continue
             # rpmspec likes to print warnings at this point, sometimes. we
             # don't really care.
-            rpmpkgnames = subprocess.check_output(
-                ['rpmspec', '-q', '--target=' + arch, '-D', 'dist .' + dist, 'SPECS/' + spec], stderr=NUL)
+            rpmspec = subprocess.Popen(
+                ['rpmspec', '-q', '--target=' + arch, '-D', 'dist .' + dist, 'SPECS/' + spec], stdout=subprocess.PIPE, stderr=NUL)
+            code = rpmspec.wait()
+            rpmpkgnames = rpmspec.stdout.read()
             for line in rpmpkgnames.splitlines():
                 # these paths are just ones I made up that work *for me*
                 mock_dist = mockmap[dist]
@@ -133,10 +135,12 @@ if not buildspecs:
 # I don't *think* you can have a spec produce multiple SRPMS, but if I'm
 # wrong, you'll want to rethink your life^Wcode here.
 for spec in buildspecs:
-    rpm_srpmoutput = subprocess.check_output(
+    rpmbuild = subprocess.Popen(
         # hardcoded to use default spec because this isn't a sign operation, and mock
         # can do whatever the hell it likes.
-        ['rpmbuild', '-bs', '--macros', base_rpmmacropath + ':' + rpmmacrodir + 'default', 'SPECS/' + spec], stderr=NUL)
+        ['rpmbuild', '-bs', '--macros', base_rpmmacropath + ':' + rpmmacrodir + 'default', 'SPECS/' + spec], stdout=subprocess.PIPE, stderr=NUL)
+    code = rpmbuild.wait()
+    rpm_srpmoutput = rpmbuild.stdout.read()
     for line in rpm_srpmoutput.splitlines():
         if line.startswith('Wrote: '):
             fields = line.partition(': ')
