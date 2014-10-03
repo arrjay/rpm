@@ -27,7 +27,7 @@ defarchs = {'x86_64': ['x86_64']}
 linux32_archs = ['i386']
 
 # directory full of binaries
-outputdir = '/home/rjlocal/itrpm-www'
+outputdir = os.environ.get('HOME')+'/rpm-repos'
 
 # directory where mock runs
 mockdir = '/var/lib/mock'
