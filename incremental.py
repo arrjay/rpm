@@ -90,6 +90,26 @@ if have_rpmspec is False:
     except OSError:
         have_linux32 = False
 
+# Preflight check - verify all specfiles are pareseable
+for spec in os.listdir('SPECS'):
+    if not spec.endswith('.spec'):
+        continue
+    if have_rpmspec:
+        rpmcmds = ['rpmspec','-q','--quiet']
+    else:
+        rpmcmds = ['rpm','-q','--quiet','--specfile']
+    rpmcmds.append('SPECS/' + spec)
+    try:
+        speccheck = subprocess.Popen(rpmcmds, stdout=subprocess.PIPE, stderr=NUL)
+        code = speccheck.wait()
+        if code != 0:
+            raise Exception('parse check returned non-zero status')
+    except Exception as e:
+        print 'rpm spec parsing failed on ' + spec
+        print str(e)
+        print speccheck.stdout.read()
+        raise Exception('ABORTING BUILD')
+
 # okay, for every file in the spec directory, see if we can get the
 # resulting rpm name(s)
 for dist in dists:
