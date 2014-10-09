@@ -4,9 +4,17 @@ import platform
 import os
 import subprocess
 import shutil
+import optparse
 
 # we don't bother importing python rpm bindings, as we're interacting with
 # rpmbuild, which the bindings don't support.
+
+parser = optparse.OptionParser()
+parser.add_option("-u", "--unsigned",
+                  action="store_false", dest="sign_rpms", default=True,
+                  help="skip RPM signing")
+
+(options, args) = parser.parse_args()
 
 # tuneables
 # mock chroot base to use
@@ -233,32 +241,31 @@ for mock_tuple in mockups:
                     shutil.copy2(
                         mockdir + '/' + mock_tuple + '/result/' + rpmfile, reposub + '/' + distdata[2])
 
-# if we got to this point, all the binries successfully built. so, sign
-# the srpms
-print "Signing SRPMS"
-rpmsign = ['./buildsystem/rpmsign.exp',
-    '--macros', base_rpmmacropath + rpmmacrodir + 'default',
-    '--addsign']
-rpmsign.extend(new_srpms.values())
-try:
-    subprocess.check_call(rpmsign)
-except:
-    raise Exception('RPMSIGN FAILED')
-
-
-
-# now sign the RPMs per output directory. note that check_call here uses shell globbing.
-# we don't sign debuginfo (today?)
-print "Signing built packages"
-rpmsign = './buildsystem/rpmsign.exp --macros '
-for mock_tuple in mockups:
-    distdata = mock_tuple.split('-')
-    reposub = mockrevmap[distdata[1]]
-    dist_sign = rpmsign + base_rpmmacropath + rpmmacrodir + reposub +' --addsign ' + reposub + '/' + distdata[2] + '/*.rpm'
+if options.sign_rpms:
+    # if we got to this point, all the binries successfully built. so, sign
+    # the srpms
+    print "Signing SRPMS"
+    rpmsign = ['./buildsystem/rpmsign.exp',
+        '--macros', base_rpmmacropath + rpmmacrodir + 'default',
+        '--addsign']
+    rpmsign.extend(new_srpms.values())
     try:
-        subprocess.check_call(dist_sign, shell=True)
+        subprocess.check_call(rpmsign)
     except:
         raise Exception('RPMSIGN FAILED')
+
+    # now sign the RPMs per output directory. note that check_call here uses shell globbing.
+    # we don't sign debuginfo (today?)
+    print "Signing built packages"
+    rpmsign = './buildsystem/rpmsign.exp --macros '
+    for mock_tuple in mockups:
+        distdata = mock_tuple.split('-')
+        reposub = mockrevmap[distdata[1]]
+        dist_sign = rpmsign + base_rpmmacropath + rpmmacrodir + reposub +' --addsign ' + reposub + '/' + distdata[2] + '/*.rpm'
+        try:
+            subprocess.check_call(dist_sign, shell=True)
+        except:
+            raise Exception('RPMSIGN FAILED')
 
 # push staged binaries into repo
 for mock_tuple in mockups:
