@@ -236,9 +236,12 @@ for mock_tuple in mockups:
 # if we got to this point, all the binries successfully built. so, sign
 # the srpms
 print "Signing SRPMS"
-srpm_string = ' '.join(new_srpms.values())
+rpmsign = ['./buildsystem/rpmsign.exp',
+    '--macros', base_rpmmacropath + rpmmacrodir + 'default',
+    '--addsign']
+rpmsign.extend(new_srpms.values())
 try:
-    subprocess.check_call('/bin/sh -c "./buildsystem/rpmsign.exp --macros '+base_rpmmacropath+rpmmacrodir+'default --addsign '+srpm_string+'"')
+    subprocess.check_call(rpmsign)
 except:
     raise Exception('RPMSIGN FAILED')
 
@@ -247,11 +250,16 @@ except:
 # now sign the RPMs per output directory. note that check_call here uses shell globbing.
 # we don't sign debuginfo (today?)
 print "Signing built packages"
+rpmsign = ['./buildsystem/rpmsign.exp',
+    '--macros']
 for mock_tuple in mockups:
     distdata = mock_tuple.split('-')
     reposub = mockrevmap[distdata[1]]
+    dist_sign = rpmsign
+    dist_sign.extend([base_rpmmacropath + rpmmacrodir + reposub, '--addsign',
+        reposub + '/' + distdata[2] + '/*.rpm'])
     try:
-        subprocess.check_call('/bin/sh -c "./buildsystem/rpmsign.exp --macros '+base_rpmmacropath+rpmmacrodir+reposub+' --addsign ' + reposub + '/' + distdata[2] + '/*.rpm"')
+        subprocess.check_call(dist_sign, shell=True)
     except:
         raise Exception('RPMSIGN FAILED')
 
