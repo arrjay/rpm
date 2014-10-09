@@ -244,6 +244,7 @@ try:
     if cli == 0:
       signatory.sendline('')
     signatory.expect(pexpect.EOF)
+    signatory.wait
 except:
     print signatory.before
     raise Exception('RPMSIGN FAILED')
@@ -262,6 +263,7 @@ for mock_tuple in mockups:
         if cli == 0:
           signatory.sendline('')
         signatory.expect(pexpect.EOF)
+        signatory.wait
     except:
         print signatory.before
         raise Exception('RPMSIGN FAILED')
