@@ -239,7 +239,7 @@ for mock_tuple in mockups:
 print "Signing SRPMS"
 srpm_string = ' '.join(new_srpms.values())
 try:
-    signatory = pexpect.spawn('rpm --macros '+base_rpmmacropath+rpmmacrodir+'default --addsign '+srpm_string)
+    signatory = pexpect.spawn('/bin/sh -c "rpm --macros '+base_rpmmacropath+rpmmacrodir+'default --addsign '+srpm_string+'"')
     cli = signatory.expect(['Enter pass phrase: '])
     if cli == 0:
       signatory.sendline('')
