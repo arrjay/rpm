@@ -243,9 +243,12 @@ try:
     cli = signatory.expect(['Enter pass phrase: '])
     if cli == 0:
       signatory.sendline('')
+    signatory.expect(pexpect.EOF)
 except:
     print signatory.before
     raise Exception('RPMSIGN FAILED')
+
+
 
 # now sign the RPMs per output directory. note that check_call here uses shell globbing.
 # we don't sign debuginfo (today?)
@@ -258,6 +261,7 @@ for mock_tuple in mockups:
         cli = signatory.expect(['Enter pass phrase: '])
         if cli == 0:
           signatory.sendline('')
+        signatory.expect(pexpect.EOF)
     except:
         print signatory.before
         raise Exception('RPMSIGN FAILED')
