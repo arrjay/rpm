@@ -254,7 +254,7 @@ rpmsign = './buildsystem/rpmsign.exp --macros'
 for mock_tuple in mockups:
     distdata = mock_tuple.split('-')
     reposub = mockrevmap[distdata[1]]
-    dist_sign = rpmsign + base_rpmmacropath + rpmmacrodir + reposub +' --addsign ' + reposub + '/' + distdata[2] + '/*.rpm'])
+    dist_sign = rpmsign + base_rpmmacropath + rpmmacrodir + reposub +' --addsign ' + reposub + '/' + distdata[2] + '/*.rpm')
     try:
         subprocess.check_call(dist_sign, shell=True)
     except:
