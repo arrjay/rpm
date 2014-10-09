@@ -4,7 +4,6 @@ import platform
 import os
 import subprocess
 import shutil
-import pexpect
 
 # we don't bother importing python rpm bindings, as we're interacting with
 # rpmbuild, which the bindings don't support.
@@ -239,14 +238,8 @@ for mock_tuple in mockups:
 print "Signing SRPMS"
 srpm_string = ' '.join(new_srpms.values())
 try:
-    signatory = pexpect.spawn('/bin/sh -c "rpm --macros '+base_rpmmacropath+rpmmacrodir+'default --addsign '+srpm_string+'"')
-    cli = signatory.expect(['Enter pass phrase: '])
-    if cli == 0:
-      signatory.sendline('')
-    signatory.expect(pexpect.EOF)
-    signatory.wait
+    subprocess.check_call('/bin/sh -c "./buildsystem/rpmsign.exp --macros '+base_rpmmacropath+rpmmacrodir+'default --addsign '+srpm_string+'"')
 except:
-    print signatory.before
     raise Exception('RPMSIGN FAILED')
 
 
@@ -258,14 +251,8 @@ for mock_tuple in mockups:
     distdata = mock_tuple.split('-')
     reposub = mockrevmap[distdata[1]]
     try:
-        signatory = pexpect.spawn('/bin/sh -c "rpm --macros '+base_rpmmacropath+rpmmacrodir+reposub+' --addsign ' + reposub + '/' + distdata[2] + '/*.rpm"')
-        cli = signatory.expect(['Enter pass phrase: '])
-        if cli == 0:
-          signatory.sendline('')
-        signatory.expect(pexpect.EOF)
-        signatory.wait
+        subprocess.check_call('/bin/sh -c "./buildsystem/rpmsign.exp --macros '+base_rpmmacropath+rpmmacrodir+reposub+' --addsign ' + reposub + '/' + distdata[2] + '/*.rpm"')
     except:
-        print signatory.before
         raise Exception('RPMSIGN FAILED')
 
 # push staged binaries into repo
