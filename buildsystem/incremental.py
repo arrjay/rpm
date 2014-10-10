@@ -235,6 +235,13 @@ for set in mockups.keys():
 if not buildspecs and not topkg:
     raise Exception('There is nothing to do')
 
+# create build directories if nonexistent, and give an error if they *did* exist
+for repo in createrepos:
+    distdata = repo.split('-')
+    reposub = mockrevmap[distdata[1]]
+    os.makedirs(reposub + '/' + distdata[2])
+    os.makedirs(reposub + '/' + distdata[2] + '-debug')
+
 # make all the SRPMS - unsigned for mock
 # rpmspec can't give you the package name, so we have to grovel the rpmbuild -bs output.
 # I don't *think* you can have a spec produce multiple SRPMS, but if I'm
@@ -258,10 +265,6 @@ for mock_tuple in mockups:
     # code here.
     distdata = mock_tuple.split('-')
     reposub = mockrevmap[distdata[1]]
-    # we really don't want this directory to exist until we started the build,
-    # so I approve blowing up if it did.
-    os.makedirs(reposub + '/' + distdata[2])
-    os.makedirs(reposub + '/' + distdata[2] + '-debug')
     for spec in mockups[mock_tuple]:
         # mock scribbles all over stderr. let it. we'll check if any RPMs
         # showed up next.
