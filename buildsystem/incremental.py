@@ -5,6 +5,7 @@ import os
 import subprocess
 import shutil
 import optparse
+import errno
 
 # we don't bother importing python rpm bindings, as we're interacting with
 # rpmbuild, which the bindings don't support.
@@ -119,7 +120,14 @@ for spec in os.listdir('SPECS'):
 
 # okay, for every file in the spec directory, see if we can get the
 # resulting rpm name(s)
+# create the rpm repo output dirs at the same time.
 for dist in dists:
+    try:
+        os.makedirs(outputdir + '/' + dist)
+    except OSError, exc:
+        if exc.errno == errno.EEXIST and os.path.isdir(outputdir + '/' + dist):
+            pass
+        else: raise
 
     # dist-specific hacks: there is no el7 i386
     if dist == 'el7':
@@ -127,6 +135,19 @@ for dist in dists:
             buildarchs.remove('i386')
 
     for arch in buildarchs:
+        try:
+            os.makedirs(outputdir + '/' + dist + '/' + arch)
+        except OSError, exc:
+            if exc.errno == errno.EEXIST and os.path.isdir(outputdir + '/' + dist + '/' + arch):
+                pass
+            else: raise
+        try:
+            os.makedirs(outputdir + '/' + dist + '/' + arch + '-debug')
+        except OSError, exc:
+            if exc.errno == errno.EEXIST and os.path.isdir(outputdir + '/' + dist + '/' + arch + '-debug'):
+                pass
+            else: raise
+
         for spec in os.listdir('SPECS'):
             # not all our specs/srpms actually build on all dists. this lets us
             # specify where to build.
