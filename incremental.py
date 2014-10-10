@@ -171,24 +171,27 @@ for dist in dists:
             # rpmspec likes to print warnings at this point, sometimes. we
             # don't really care.
             if have_rpmspec is True:
-                rpmspec = subprocess.Popen(
-                    ['rpmspec', '-q', '--target=' + arch, '-D', 'dist .' + dist, 'SPECS/' + spec], stdout=subprocess.PIPE, stderr=NUL)
+                rpmspec_cmd = ['rpmspec', '--target=' + arch]
             else:
                 # attempt to emulate rpmspec via rpm and linux32. yuck. fortunately, linux32 does work if you're already *on* linux32
                 if arch in linux32_archs:
-                    rpmspec = subprocess.Popen(
-                        ['linux32', 'rpm', '-q', '-D', 'dist .' + dist, '--specfile', 'SPECS/' + spec], stdout=subprocess.PIPE, stderr=NUL)
+                    rpmspec_cmd = ['linux32', 'rpm', '--specfile']
                 else:
-                    rpmspec = subprocess.Popen(
-                        ['rpm', '-q', '-D', 'dist .' + dist, '--specfile', 'SPECS/' + spec], stdout=subprocess.PIPE, stderr=NUL)
+                    rpmspec_cmd = ['rpm', '--specfile']
+            if 'el' in dist:
+                rhel = mockmap[dist]
+                rpmspec_cmd.extend(['-D', 'rhel ' + rhel])
+            rpmspec_cmd.extend(['-q', '-D', 'dist .' + dist, 'SPECS/' + spec])
+            rpmspec = subprocess.Popen(rpmspec_cmd, stdout=subprocess.PIPE, stderr=NUL)
             code = rpmspec.wait()
             rpmpkgnames = rpmspec.stdout.read()
             for line in rpmpkgnames.splitlines():
-                # these paths are just ones I made up that work *for me*
-                mock_dist = mockmap[dist]
-                mock_tuple = mockroot + '-' + mock_dist + '-' + arch
-                bin2spec[
-                    dist + '/' + arch + '/' + line + '.rpm'] = [spec, mock_tuple]
+                if not '-debuginfo-' in line:
+                    # these paths are just ones I made up that work *for me*
+                    mock_dist = mockmap[dist]
+                    mock_tuple = mockroot + '-' + mock_dist + '-' + arch
+                    bin2spec[
+                        dist + '/' + arch + '/' + line + '.rpm'] = [spec, mock_tuple]
 
         # vendor packages are convenient to handle here, but really live in their own datastructures
         if os.path.isdir('RPMS/' + dist + '/' + arch):
