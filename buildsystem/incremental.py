@@ -77,11 +77,15 @@ NUL = open(os.devnull, 'w')
 # for a given binary, what spec would buld it? what mock chroot does it
 # live in? what is the dist tag? what is the arch?
 bin2spec = {}
-binaries = set()  # all the binaries possible
+ven2bin = {}
+binaries = set()  # all the buildable binaries possible
+vendorpkgs = set() # all the pre-built vendor RPMs we deem to sign.
 tobuild = set()  # missing binaries
+topkg = set() # missing vendor binaries
 buildspecs = set()  # the collection of specs needed to produce needed binaries
 new_srpms = {}    # for a given spec, what SRPM is the result?
 mockups = {}    # for a given chroot, what specs need to be built?
+createrepos = set() # final repos that need updating
 
 have_rpmspec = True
 # see if we *have* rpmspec
@@ -186,13 +190,35 @@ for dist in dists:
                 bin2spec[
                     dist + '/' + arch + '/' + line + '.rpm'] = [spec, mock_tuple]
 
+        # vendor packages are convenient to handle here, but really live in their own datastructures
+        if os.path.isdir('RPMS/' + dist + '/' + arch):
+            for rpm in os.listdir('RPMS/' + dist + '/' + arch):
+                if not rpm.endswith('.rpm'):
+                    continue
+                if not os.stat('RPMS/' + dist + '/' + arch + '/' + rpm + '.reason').st_size:
+                    raise Exception('attempt to shove through a binary with no explanation! aborting.')
+                rpmq = subprocess.Popen(
+                    ['rpm', '-pq', 'RPMS/' + dist + '/' + arch + '/' + rpm], stdout=subprocess.PIPE, stderr=NUL)
+                code = rpmq.wait()
+                rpmpkgname = rpmq.stdout.read().rstrip()
+                ven2bin[dist + '/' + arch + '/' + rpmpkgname + '.rpm'] = 'RPMS/' + dist + '/' + arch + '/' + rpm
+                mock_dist = mockmap[dist]
+                createrepos.add(mockroot + '-' + mock_dist + '-' + arch)
+
 # now, flatten bin2spec
 for binary in bin2spec.keys():
     binaries.add(binary)
 
+# flatten vendor package list as well.
+for vendorbin in ven2bin.keys():
+    vendorpkgs.add(vendorbin)
+
 # splay that back out and see if packages exist. hahahaha.
 tobuild.update(
     [binary for binary in binaries if not os.path.isfile(outputdir + '/' + binary)])
+
+topkg.update(
+    [binary for binary in vendorpkgs if not os.path.isfile(outputdir + '/' + binary)])
 
 # which then turns in to specs and mock calls we need.
 for binary in tobuild:
@@ -201,9 +227,13 @@ for binary in tobuild:
         mockups[bin2spec[binary][1]] = set()
     mockups[bin2spec[binary][1]].add(bin2spec[binary][0])
 
+# copy the mockup keys and vendoys to create repos that need signing/createrepo-ing
+for set in mockups.keys():
+    createrepos.add(set)
+
 # if there isn't anything *to* build, that's actually an error.
-if not buildspecs:
-    raise Exception('There is nothing to build')
+if not buildspecs and not topkg:
+    raise Exception('There is nothing to do')
 
 # make all the SRPMS - unsigned for mock
 # rpmspec can't give you the package name, so we have to grovel the rpmbuild -bs output.
@@ -262,25 +292,30 @@ for mock_tuple in mockups:
                     shutil.copy2(
                         mockdir + '/' + mock_tuple + '/result/' + rpmfile, reposub + '/' + distdata[2])
 
+# handle vendor RPMS now.
+for destination in vendorpkgs:
+    shutil.copy2(ven2bin[destination], destination)
+
 if options.sign_rpms:
     # if we got to this point, all the binries successfully built. so, sign
     # the srpms
-    print "Signing SRPMS"
-    rpmsign = ['./buildsystem/rpmsign.exp',
-        '--macros', base_rpmmacropath + rpmmacrodir + 'default',
-        '--addsign']
-    rpmsign.extend(new_srpms.values())
-    try:
-        subprocess.check_call(rpmsign)
-    except:
-        raise Exception('RPMSIGN FAILED')
+    if new_srpms:
+        print "Signing SRPMS"
+        rpmsign = ['./buildsystem/rpmsign.exp',
+            '--macros', base_rpmmacropath + rpmmacrodir + 'default',
+            '--addsign']
+        rpmsign.extend(new_srpms.values())
+        try:
+            subprocess.check_call(rpmsign)
+        except:
+            raise Exception('RPMSIGN FAILED')
 
     # now sign the RPMs per output directory. note that check_call here uses shell globbing.
     # we don't sign debuginfo (today?)
-    print "Signing built packages"
+    print "Signing packages"
     rpmsign = './buildsystem/rpmsign.exp --macros '
-    for mock_tuple in mockups:
-        distdata = mock_tuple.split('-')
+    for repo in createrepos:
+        distdata = repo.split('-')
         reposub = mockrevmap[distdata[1]]
         dist_sign = rpmsign + base_rpmmacropath + rpmmacrodir + reposub +' --addsign ' + reposub + '/' + distdata[2] + '/*.rpm'
         try:
@@ -289,8 +324,8 @@ if options.sign_rpms:
             raise Exception('RPMSIGN FAILED')
 
 # push staged binaries into repo
-for mock_tuple in mockups:
-    distdata = mock_tuple.split('-')
+for repo in createrepos:
+    distdata = repo.split('-')
     reposub = mockrevmap[distdata[1]]
     try:
         subprocess.check_call('cp ' + reposub + '/' + distdata[
@@ -307,17 +342,18 @@ for mock_tuple in mockups:
             raise Exception('REPO DEBUG COPYIN FAILED')
 
 # push staged SRPMS into repo
-srpm_cp = ['cp']
-srpm_cp.extend(new_srpms.values())
-srpm_cp.extend([outputdir + '/SRPMS'])
-try:
-    subprocess.check_call(srpm_cp)
-except Exception:
-    raise Exception('SRPM COPYIN FAILED')
+if new_srpms:
+    srpm_cp = ['cp']
+    srpm_cp.extend(new_srpms.values())
+    srpm_cp.extend([outputdir + '/SRPMS'])
+    try:
+        subprocess.check_call(srpm_cp)
+    except Exception:
+        raise Exception('SRPM COPYIN FAILED')
 
 # update binary repos
-for mock_tuple in mockups:
-    distdata = mock_tuple.split('-')
+for repo in createrepos:
+    distdata = repo.split('-')
     reposub = mockrevmap[distdata[1]]
     try:
         subprocess.check_call(
@@ -326,7 +362,8 @@ for mock_tuple in mockups:
         raise Exception('CREATEREPO FAILED')
 
 # update SRPM repo
-try:
-    subprocess.check_call(['createrepo', outputdir + '/SRPMS'])
-except Exception:
-    raise Exception('CREATEREPO FAILED')
+if new_srpms:
+    try:
+        subprocess.check_call(['createrepo', outputdir + '/SRPMS'])
+    except Exception:
+        raise Exception('CREATEREPO FAILED')
