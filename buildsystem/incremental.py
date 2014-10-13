@@ -255,6 +255,8 @@ for spec in buildspecs:
         # can do whatever the hell it likes.
         ['rpmbuild', '-bs', '--macros', base_rpmmacropath + rpmmacrodir + 'default', 'SPECS/' + spec], stdout=subprocess.PIPE, stderr=NUL)
     code = rpmbuild.wait()
+    if code != 0:
+        raise Exception ('SRPM PACKAGE FAILED')
     rpm_srpmoutput = rpmbuild.stdout.read()
     for line in rpm_srpmoutput.splitlines():
         if line.startswith('Wrote: '):
