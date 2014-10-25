@@ -1,8 +1,0 @@
-%_topdir	%(eval pwd)
-%_sourcedir	%{_topdir}/SOURCES/%{name}
-
-%vendor		"Palantir Technologies"
-%packager	autobuilder
-
-# let's just sign SRPM packages with the latest build platform key.
-%_gpg_name	49EC5FAC
