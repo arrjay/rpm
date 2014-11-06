@@ -6,7 +6,7 @@ DISTS="el5 el6 el7"
 MOCKCONF="buildsystem/mock"
 
 # within the context of a tree, perform a build of only the files that have changed between master and that tree.
-me=$(git rev-parse --abbrev-ref HEAD)
+me=$(git branch --contains HEAD|head -n 1|sed 's/^\* //') # WARNING: fragile
 
 case $me in 
   master)
