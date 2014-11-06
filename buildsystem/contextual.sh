@@ -42,9 +42,9 @@ if [ -n "${specs2build}" ] ; then
   # is about.
   for spec in ${specs2build} ; do
     # get filename of srpm (we moved it!)
-    specbase=$(basename "${spec2srpm[$spec]}")
-    specname="${specbase%.spec}"
-    srpm="${rpmrepo}/SRPMS/${specbase}"
+    specname="${spec%.spec}"
+    srpm=$(basename "${spec2srpm[$spec]}")
+    srpm="${rpmrepo}/SRPMS/${srpm}"
 
     # loop over dists we could build and see...
     for dist in ${DISTS} ; do
@@ -60,7 +60,7 @@ if [ -n "${specs2build}" ] ; then
         # run mock, with our arg collection
         mock --configdir "${MOCKCONF}" -r arrjay-${dist##el}-x86_64 -D "dist .${dist}" --rebuild "${srpm}"
         # create holding directory if nonexistent
-        if [ -d "${dist}/${spec}" ] ; then
+        if [ -d "${dist}/${specname}" ] ; then
           mkdir -p "${dist}/${specname}"
         fi
         mv "${MOCKOUT}/arrjay-${dist##el}-x86_64/"* "${dist}/${specname}"
