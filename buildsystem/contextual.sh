@@ -20,7 +20,7 @@ rpmrepo="${HOME}/rpm-repos/inprogress/${me}"
 # get objects that are different between master and ourselves - since we should only be running against a commit, we're not worrying about untracked files.
 output=$(git diff --name-only master)
 
-specs2build=$(echo "${output}" | grep '^SPECS/')
+specs2build=$(echo "${output}" | grep '^SPECS/' | grep '.spec$' )
 
 if [ -n "${specs2build}" ] ; then
   # okay, we actually have something worth doing, let's get to it.
@@ -47,17 +47,23 @@ if [ -n "${specs2build}" ] ; then
   # okay this one gets a little weirder - all the SRPMS are now moved, and we have a list of SPECS, but we still need to check if the supported-dists flag
   # is about.
   for spec in ${specs2build} ; do
+    # get filename of srpm (we moved it!)
+    srpm=$(basename "${spec2srpm[$spec]}")
+    srpm="${rpmrepo}/SRPMS/${srpm}"
+
+    # loop over dists we could build and see...
     for dist in ${DISTS} ; do
     buildit=1 # assume we're going to do the build
-    if [ -f "SPECS/${spec}.supported-dists" ] ; then
-      grep -q "${dist}" "SPECS/${spec}.supported-dists"
+    if [ -f "${spec}.supported-dists" ] ; then
+      grep -q "${dist}" "${spec}.supported-dists"
       if [ ${?} -ne 0 ] ; then
         buildit=0	# you will not be building today
       fi
     fi
+
     if [ ${buildit} -eq 1 ] ; then
       # run mock, with our arg collection
-      echo mock --configdir "${MOCKCONF}" -r arrjay-${dist##el}-x86_64 -D "dist .${dist}" --rebuild "${spec2srpm[$spec]}"
+      mock --configdir "${MOCKCONF}" -r arrjay-${dist##el}-x86_64 -D "dist .${dist}" --rebuild "${srpm}"
     fi
     done
   done
