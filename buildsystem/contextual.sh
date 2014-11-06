@@ -6,16 +6,9 @@ DISTS="el5 el6 el7"
 MOCKCONF="buildsystem/mock"
 
 # within the context of a tree, perform a build of only the files that have changed between master and that tree.
-me=$(git branch --contains HEAD|head -n 1|sed 's/^\* //') # WARNING: fragile
+me=${BUILD_TAG}
 
-case $me in 
-  master)
-    echo "contextual branch build is not intended for master, that should be handled by incremental/stashbot publish"
-    exit 1
-    ;;
-esac
-
-rpmrepo="${HOME}/rpm-repos/inprogress/${me}"
+rpmrepo="${HOME}/rpm-repos/verify_builds/${me}"
 
 # get objects that are different between master and ourselves - since we should only be running against a commit, we're not worrying about untracked files.
 output=$(git diff --name-only master)
