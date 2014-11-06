@@ -60,7 +60,7 @@ if [ -n "${specs2build}" ] ; then
         # run mock, with our arg collection
         mock --configdir "${MOCKCONF}" -r arrjay-${dist##el}-x86_64 -D "dist .${dist}" --rebuild "${srpm}"
         # create holding directory if nonexistent
-        if [ -d "${dist}/${specname}" ] ; then
+        if [ ! -d "${dist}/${specname}" ] ; then
           mkdir -p "${dist}/${specname}"
         fi
         mv "${MOCKOUT}/arrjay-${dist##el}-x86_64/"* "${dist}/${specname}"
