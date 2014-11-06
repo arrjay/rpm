@@ -4,6 +4,7 @@ set +e
 # this script is not as flexible as intremental.py, but it allows you to build a branch for $DISTS on x86_64, which is 99% of what we care about.
 DISTS="el5 el6 el7"
 MOCKCONF="buildsystem/mock"
+MOCKOUT="/var/lib/mock"
 
 # within the context of a tree, perform a build of only the files that have changed between master and that tree.
 me=${BUILD_TAG}
@@ -41,23 +42,29 @@ if [ -n "${specs2build}" ] ; then
   # is about.
   for spec in ${specs2build} ; do
     # get filename of srpm (we moved it!)
-    srpm=$(basename "${spec2srpm[$spec]}")
-    srpm="${rpmrepo}/SRPMS/${srpm}"
+    specbase=$(basename "${spec2srpm[$spec]}")
+    specname="${specbase%.spec}"
+    srpm="${rpmrepo}/SRPMS/${specbase}"
 
     # loop over dists we could build and see...
     for dist in ${DISTS} ; do
-    buildit=1 # assume we're going to do the build
-    if [ -f "${spec}.supported-dists" ] ; then
-      grep -q "${dist}" "${spec}.supported-dists"
-      if [ ${?} -ne 0 ] ; then
-        buildit=0	# you will not be building today
+      buildit=1 # assume we're going to do the build
+      if [ -f "${spec}.supported-dists" ] ; then
+        grep -q "${dist}" "${spec}.supported-dists"
+        if [ ${?} -ne 0 ] ; then
+          buildit=0	# you will not be building today
+        fi
       fi
-    fi
 
-    if [ ${buildit} -eq 1 ] ; then
-      # run mock, with our arg collection
-      mock --configdir "${MOCKCONF}" -r arrjay-${dist##el}-x86_64 -D "dist .${dist}" --rebuild "${srpm}"
-    fi
+      if [ ${buildit} -eq 1 ] ; then
+        # run mock, with our arg collection
+        mock --configdir "${MOCKCONF}" -r arrjay-${dist##el}-x86_64 -D "dist .${dist}" --rebuild "${srpm}"
+        # create holding directory if nonexistent
+        if [ -d "${dist}/${spec}" ] ; then
+          mkdir -p "${dist}/${specname}"
+        fi
+        mv "${MOCKOUT}/arrjay-${dist##el}-x86_64/"* "${dist}/${specname}"
+      fi
     done
   done
 
