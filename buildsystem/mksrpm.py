@@ -36,10 +36,14 @@ new_srpms = {}    # for a given spec, what SRPM is the result?
 # I don't *think* you can have a spec produce multiple SRPMS, but if I'm
 # wrong, you'll want to rethink your life^Wcode here.
 for spec in args.specfiles:
-    rpm_srpmoutput = subprocess.check_output(
+    rpmbuild = subprocess.Popen(
         # hardcoded to use default spec because this isn't a sign operation, and mock
         # can do whatever the hell it likes.
-        ['rpmbuild', '-bs', '--macros', base_rpmmacropath + ':' + rpmmacrodir + 'default', spec], stderr=NUL)
+        ['rpmbuild', '-bs', '--macros', base_rpmmacropath + ':' + rpmmacrodir + 'default', spec], stdout=subprocess.PIPE, stderr=NUL)
+    code = rpmbuild.wait()
+    if code != 0:
+        raise Exception ('SRPM PACKAGE FAILED')
+    rpm_srpmoutput = rpmbuild.stdout.read()
     for line in rpm_srpmoutput.splitlines():
         if line.startswith('Wrote: '):
             fields = line.partition(': ')
