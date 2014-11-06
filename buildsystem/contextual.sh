@@ -64,7 +64,7 @@ if [ -n "${specs2build}" ] ; then
         if [ ! -d "${dist}/${specname}" ] ; then
           mkdir -p "${dist}/${specname}"
         fi
-        mv "${MOCKOUT}/arrjay-${dist##el}-x86_64/"* "${dist}/${specname}"
+        mv "${MOCKOUT}/arrjay-${dist##el}-x86_64/result/"* "${dist}/${specname}"
       fi
     done
   done
