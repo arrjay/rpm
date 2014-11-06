@@ -42,7 +42,8 @@ if [ -n "${specs2build}" ] ; then
   # is about.
   for spec in ${specs2build} ; do
     # get filename of srpm (we moved it!)
-    specname="${spec%.spec}"
+    specname=$(basename "${spec}")
+    specname="${specname%.spec}"
     srpm=$(basename "${spec2srpm[$spec]}")
     srpm="${rpmrepo}/SRPMS/${srpm}"
 
