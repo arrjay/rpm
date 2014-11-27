@@ -29,7 +29,7 @@ mockmap = {'el6': '6', 'el5': '5', 'el7': '7'}
 
 # architectures to build for given a particular cpu
 #defarchs = {'x86_64' : ['x86_64', 'i386']}
-defarchs = {'x86_64': ['x86_64']}
+defarchs = {'x86_64': ['x86_64', 'i386']}
 
 # architectures targetable via linux32 on a 64-bit system.
 linux32_archs = ['i386']
