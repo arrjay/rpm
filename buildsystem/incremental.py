@@ -275,7 +275,7 @@ for mock_tuple in mockups:
         # showed up next.
         try:
             subprocess.check_call(
-                ['mock', '--configdir', mockcfgs, '-r', mock_tuple, '-D', 'dist .' + reposub, '--rebuild', new_srpms[spec]])
+                ['/usr/bin/mock', '--configdir', mockcfgs, '-r', mock_tuple, '-D', 'dist .' + reposub, '--rebuild', new_srpms[spec]])
         except Exception as e:
             print 'MOCK FAILED (' + str(e) + ') MOCK LOGS PROCEED'
             # dump only the build and state logs to stdout so we easily see it.
