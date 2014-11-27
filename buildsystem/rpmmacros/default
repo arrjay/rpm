@@ -5,4 +5,4 @@
 %packager	autobuilder
 
 # let's just sign SRPM packages with the latest build platform key.
-%_gpg_name	49EC5FAC
+%_gpg_name	E564A4C8
