@@ -17,7 +17,7 @@
 Summary: Library that implements an embeddable SQL database engine
 Name: sqlite-unlock_notify
 Version: %{basever}
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: Public Domain
 Group: Applications/Databases
 URL: http://www.sqlite.org/
@@ -30,8 +30,8 @@ Patch2: sqlite-3.6.6.2-lemon-snprintf.patch
 BuildRequires: ncurses-devel readline-devel glibc-devel
 # libdl patch needs
 BuildRequires: autoconf
-%if %{with tcl}
 BuildRequires: /usr/bin/tclsh
+%if %{with tcl}
 BuildRequires: tcl-devel
 %{!?tcl_version: %global tcl_version 8.5}
 %{!?tcl_sitearch: %global tcl_sitearch %{_libdir}/tcl%{tcl_version}}
@@ -186,6 +186,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Nov 27 2014 RJ Bergeron <rpm@arrjay.net> - 3.6.20-3
+- tcl is a builddep even if building without tcl. so.
+
 * Fri Aug 12 2014 RJ Bergeron <rpm@arrjay.net> - 3.6.20-2
 - build with unlock_notify support
 
