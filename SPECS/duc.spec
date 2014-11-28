@@ -1,7 +1,8 @@
 %global git_checkout 50944f0d
 Name:		duc
 Version:	0
-Release:	1%{?dist}.20141127git%{git_checkout}
+Release:	2%{?dist}.20141127git%{git_checkout}
+
 Summary:	disk usage calculator
 
 Group:		Applications/File
@@ -49,8 +50,7 @@ make install DESTDIR=%{buildroot}
 
 %files
 %{_bindir}/duc
-%{_libdir}/libduc-graph.so.1.0.0
-%{_libdir}/libduc.so.1.0.0
+%{_libdir}/libduc*.so*
 
 %files debug
 %{_bindir}/duc.debug
@@ -58,7 +58,12 @@ make install DESTDIR=%{buildroot}
 %files devel
 %{_libdir}/libduc*.la
 %{_libdir}/libduc*.a
-%{_libdir}/libduc.so
-%{_libdir}/libduc.so.1
-%{_libdir}/libduc-graph.so
-%{_libdir}/libduc-graph.so.1
+
+%changelog
+* Thu Nov 27 2014 RJ Bergeron <rpm@arrjay.net> - 0-2.20141127git50944f0d
+- fix split of devel and main package, write a changelog
+
+* Thu Nov 27 2014 RJ Bergeron <rpm@arrjay.net> - 0-1.20141127git50944f0d
+- initial packaging
+* Thu Nov 27 2014 RJ Bergeron <rpm@arrjay.net> - 0.1.20141127git50944f0d
+- initial packaging
