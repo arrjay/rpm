@@ -56,8 +56,8 @@ BuildRequires: gettext intltool desktop-file-utils
 BuildRequires: gnome-doc-utils
 
 # for the included plug-in scripts
-BuildRequires: exiv2 fbida ImageMagick zenity
-Requires: exiv2 fbida ImageMagick zenity
+BuildRequires: exiv2 ImageMagick zenity
+Requires: exiv2 ImageMagick zenity
 # at run-time, it is only displayed in menus, if ufraw executable is available
 %if 0%{?fedora}
 BuildRequires: ufraw
@@ -80,7 +80,7 @@ and zoom.
 %setup -q -n %{name}-%{upstreamversion}
 # guard against missing executables at (re)build-time,
 # these are needed by the plug-in scripts
-for f in exiftran exiv2 mogrify zenity ; do
+for f in exiv2 mogrify zenity ; do
     type $f || exit -1
 done
 %if 0%{?fedora}
