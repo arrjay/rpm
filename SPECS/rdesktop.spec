@@ -9,7 +9,7 @@ URL:            http://www.rdesktop.org/
 Source0:        http://downloads.sourceforge.net/rdesktop/%{name}-%{version}.tar.gz
 Patch1:         %{name}-libao.patch
 BuildRequires:  libao-devel
-%if 0%{?fedora} > 19
+%if 0%{?rhel} >= 7
 %global credssp --disable-credssp
 %else
 %global credssp --enable-credssp
