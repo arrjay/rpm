@@ -5,19 +5,15 @@
 
 Summary: Tool to extract boot image from an ISO file
 Name: geteltorito
-Version: 0.4
+Version: 0.5
 Release: 1%{?dist}
 License: GPL
 Group: Applications/File
-URL: http://www.uni-koblenz.de/~krienke/ftp/noarch/geteltorito/
+URL: http://userpages.uni-koblenz.de/~krienke/ftp/noarch/geteltorito/
 
-Packager: Dag Wieers <dag@wieers.com>
-Vendor: Dag Apt Repository, http://dag.wieers.com/apt/
-
-Source0: http://www.uni-koblenz.de/~krienke/ftp/noarch/geteltorito/geteltorito.pl
-Source1: http://www.uni-koblenz.de/~krienke/ftp/noarch/geteltorito/README
-Source2: http://www.uni-koblenz.de/~krienke/ftp/noarch/geteltorito/gpl.txt
-Patch0: http://colimit.googlepages.com/geteltorito.diff
+Source0: http://userpages.uni-koblenz.de/~krienke/ftp/noarch/geteltorito/geteltorito.pl
+Source1: http://userpages.uni-koblenz.de/~krienke/ftp/noarch/geteltorito/README
+Source2: http://userpages.uni-koblenz.de/~krienke/ftp/noarch/geteltorito/gpl.txt
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
 Buildarch: noarch
@@ -38,8 +34,6 @@ specify the filename wanted on the commandline using option -o <filename>
 %{__cp} -v %{SOURCE0} geteltorito
 %{__cp} -v %{SOURCE1} %{SOURCE2} .
 
-%patch0
-
 %build
 
 %install
@@ -55,5 +49,8 @@ specify the filename wanted on the commandline using option -o <filename>
 %{_bindir}/geteltorito
 
 %changelog
+* Fri Jan  2 2015 RJ Bergeron <rpm@arrjay.bnet> - 0.5-1
+- update upstream
+
 * Fri May 22 2009 Dag Wieers <dag@wieers.com> - 0.4-1 - 7981/dag
 - Initial package. (using DAR)
