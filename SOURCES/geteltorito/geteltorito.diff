@@ -1,0 +1,14 @@
+--- /usr/bin/geteltorito
++++ geteltorito
+@@ -191,7 +191,10 @@
+ }
+ if( $media == 4 ){
+ 	print STDERR "harddisk";
+-	$count=0;
++	$MBR=getSector($imgStart, 1, $imageFile );
++	$partition1=substr($MBR, 446, 16);
++	($unUsed, $firstSector, $partitionSize) = unpack( "A8VV", $partition1);
++	$count=$firstSector + $partitionSize;
+ }
+ print STDERR "\n";
+ 
