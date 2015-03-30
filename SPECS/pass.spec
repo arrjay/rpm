@@ -6,6 +6,8 @@ License:        GPLv2+
 Url:            http://zx2c4.com/projects/password-store/
 BuildArch:      noarch
 Source:         http://git.zx2c4.com/password-store/snapshot/password-store-%{version}.tar.xz
+Group:		Applications/Databases
+BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 BuildRequires:       git
 BuildRequires:       gnupg2
