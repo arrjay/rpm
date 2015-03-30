@@ -192,7 +192,7 @@ Requires:        xorg-x11-resutils
 %package extras
 Summary:         An enhanced set of screensavers
 Group:           Amusements/Graphics
-BuildRequires:   desktop-backgrounds-basic
+BuildRequires:   f22-backgrounds
 Requires:        %{name}-base = %{epoch}:%{version}-%{release}
 %if %{split_getimage}
 Requires:        %{name}-extras-base = %{epoch}:%{version}-%{release}
