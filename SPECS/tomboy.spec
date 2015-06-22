@@ -69,8 +69,6 @@ done
 # Mono 4
 sed -i configure configure.in \
  -e "s#gmcs#mcs#g"
- -e "s#Mono 2.0#Mono 4.5#g" \
- -e "s#mono/2.0#mono/4.5#g"
 
 
 %build
