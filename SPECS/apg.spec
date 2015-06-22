@@ -2,7 +2,7 @@ Summary:		Automated Password Generator for random password generation
 Name:			apg
 
 Version:		2.3.0b
-Release:		24%{?dist}
+Release:		25%{?dist}
 License:		BSD
 Group:			System Environment/Base
 URL:			http://www.adel.nursat.kz/%{name}/
@@ -10,15 +10,18 @@ URL:			http://www.adel.nursat.kz/%{name}/
 Source0:		http://www.adel.nursat.kz/%{name}/download/%{name}-%{version}.tar.gz
 Source1:		apg.socket
 Source2:		apg@.service
+Source10:		apg.xinetd
 Patch0:			apg-2.3.0b-gen_rand_pass.patch
 Patch1:                 apg-2.3.0b-null-crypt.patch
 
 BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires: systemd-units
 Requires(post): grep
+%if 0%{?rhel} >= 7
+BuildRequires: systemd-units
 Requires(post): systemd-units
 Requires(preun): systemd-units
 Requires(postun): systemd-units
+%endif
 
 %description
 APG (Automated Password Generator) is the tool set for random password
@@ -45,10 +48,14 @@ install -D apgd %{buildroot}%{_sbindir}/apgd
 install -D -m 644 doc/man/apg.1 %{buildroot}%{_mandir}/man1/apg.1
 install -D -m 644 doc/man/apgbfm.1 %{buildroot}%{_mandir}/man1/apgbfm.1
 install -D -m 644 doc/man/apgd.8 %{buildroot}%{_mandir}/man8/apgd.8
-install -d -m 755 %{buildroot}%{_unitdir}
 
+%if 0%{?rhel} >= 7
+install -d -m 755 %{buildroot}%{_unitdir}
 install -p -m 644 %{SOURCE1} %{buildroot}%{_unitdir}/%{name}.socket
 install -p -m 644 %{SOURCE2} %{buildroot}%{_unitdir}/%{name}@.service
+%else
+install -D -m 644 %{SOURCE10} %{buildroot}%{_sysconfdir}/xinetd.d/apgd
+%endif
 
 %clean
 [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
@@ -59,9 +66,8 @@ install -p -m 644 %{SOURCE2} %{buildroot}%{_unitdir}/%{name}@.service
 if [ $? == 1 ]; then
     echo -e 'pwdgen\t\t129/tcp\t\t\t# PWDGEN service' >> /etc/services
 fi
-%if 0%{?fedora} > 17
+%if 0%{?rhel} >= 7
 	%systemd_post apg@.service
-%else
 if [ $1 -eq 1 ]; then
     # Initial installation
     /bin/systemctl daemon-reload >/dev/null 2>&1 || :
@@ -69,9 +75,8 @@ fi
 %endif
 
 %preun
-%if 0%{?fedora} > 17
+%if 0%{?rhel} >= 7
 	%systemd_preun apg@.service
-%else
 if [ $1 -eq 0 ]; then
     # Package removal, not upgrade
     /bin/systemctl --no-reload disable apg@.service > /dev/null 2>&1 || :
@@ -80,9 +85,8 @@ fi
 %endif
 
 %postun
-%if 0%{?fedora} > 17
+%if 0%{?rhel} >= 7
 	%systemd_postun apg@.service
-%else
 /bin/systemctl daemon-reload >/dev/null 2>&1 || :
 if [ $1 -ge 1 ]; then
     # Package upgrade, not uninstall
@@ -97,8 +101,12 @@ fi
 %{_bindir}/apgbfm
 %{_sbindir}/apgd
 %{_mandir}/man*/*
+%if 0%{?rhel} >= 7
 %{_unitdir}/%{name}@.service
 %{_unitdir}/%{name}.socket
+%else
+%{_sysconfdir}/xinetd.d/apgd
+%endif
 
 %changelog
 * Wed Jun 17 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.3.0b-24
