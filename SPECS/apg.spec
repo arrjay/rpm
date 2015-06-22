@@ -2,7 +2,7 @@ Summary:		Automated Password Generator for random password generation
 Name:			apg
 
 Version:		2.3.0b
-Release:		13%{?dist}
+Release:		24%{?dist}
 License:		BSD
 Group:			System Environment/Base
 URL:			http://www.adel.nursat.kz/%{name}/
@@ -11,6 +11,7 @@ Source0:		http://www.adel.nursat.kz/%{name}/download/%{name}-%{version}.tar.gz
 Source1:		apg.socket
 Source2:		apg@.service
 Patch0:			apg-2.3.0b-gen_rand_pass.patch
+Patch1:                 apg-2.3.0b-null-crypt.patch
 
 BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: systemd-units
@@ -27,6 +28,7 @@ required type and prints them to standard output.
 %prep
 %setup -q
 %patch0 -p1 -b .gen_rand_pass
+%patch1 -p1
 
 %build
 # Build server
@@ -45,36 +47,48 @@ install -D -m 644 doc/man/apgbfm.1 %{buildroot}%{_mandir}/man1/apgbfm.1
 install -D -m 644 doc/man/apgd.8 %{buildroot}%{_mandir}/man8/apgd.8
 install -d -m 755 %{buildroot}%{_unitdir}
 
-install -p -m 755 %{SOURCE1} %{buildroot}%{_unitdir}/%{name}.socket
-install -p -m 755 %{SOURCE2} %{buildroot}%{_unitdir}/%{name}@.service
+install -p -m 644 %{SOURCE1} %{buildroot}%{_unitdir}/%{name}.socket
+install -p -m 644 %{SOURCE2} %{buildroot}%{_unitdir}/%{name}@.service
 
 %clean
 [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
 
 %post
 # add a service for apg if it doesn't already exist
-/bin/grep ^pwgen /etc/services >& /dev/null
+/bin/grep ^pwdgen /etc/services >& /dev/null
 if [ $? == 1 ]; then
     echo -e 'pwdgen\t\t129/tcp\t\t\t# PWDGEN service' >> /etc/services
 fi
+%if 0%{?fedora} > 17
+	%systemd_post apg@.service
+%else
 if [ $1 -eq 1 ]; then
     # Initial installation
-    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
 fi
+%endif
 
 %preun
+%if 0%{?fedora} > 17
+	%systemd_preun apg@.service
+%else
 if [ $1 -eq 0 ]; then
     # Package removal, not upgrade
-    /bin/systemctl --no-reload disable apg@.service > /dev/null 2>&1 || :
-    /bin/systemctl stop apg@.service > /dev/null 2>&1 || :
+    /bin/systemctl --no-reload disable apg@.service > /dev/null 2>&1 || :
+    /bin/systemctl stop apg@.service > /dev/null 2>&1 || :
 fi
+%endif
 
 %postun
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
-if [ $1 -ge 1 ] ; then
+%if 0%{?fedora} > 17
+	%systemd_postun apg@.service
+%else
+/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+if [ $1 -ge 1 ]; then
     # Package upgrade, not uninstall
-    /bin/systemctl try-restart apg@.service >/dev/null 2>&1 || :
+    /bin/systemctl try-restart apg@.service >/dev/null 2>&1 || :
 fi
+%endif
 
 %files
 %defattr(-, root, root)
@@ -87,6 +101,39 @@ fi
 %{_unitdir}/%{name}.socket
 
 %changelog
+* Wed Jun 17 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.3.0b-24
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
+
+* Fri Aug 15 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.3.0b-23
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
+
+* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.3.0b-22
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
+* Sat Aug 03 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.3.0b-21
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
+
+* Thu May 16 2013 Kevin Fenzi <kevin@scrye.com> 2.3.0b-20
+- Fix permissions on systemd files to be 644. Fixes bug #963913
+
+* Wed Feb 13 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.3.0b-19
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
+* Sat Aug 25 2012 Kevin Fenzi <kevin@scrye.com> 2.3.0b-18
+- Add systemd preset macros. Fixes bug #850026
+
+* Wed Jul 18 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.3.0b-17
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Sun Jun 03 2012 Kevin Fenzi <kevin@scrye.com> 2.3.0b-16
+- Fix odd space characters in scriptlets. Fixes bug #827815
+
+* Wed May 30 2012 Kevin Fenzi <kevin@scrye.com> 2.3.0b-15
+- Fix typo in scriptlet. Fixes bug #826638
+
+* Mon Apr 23 2012 Kevin Fenzi <kevin@scrye.com> 2.3.0b-14
+- Add patch to handle crypt returning NULL. Fixes bug #815575
+
 * Sat Jan 28 2012 Kevin Fenzi <kevin@scrye.com> 2.3.0b-13
 - Convert to use systemd instead of xinetd. Fixes bug #737168
 
